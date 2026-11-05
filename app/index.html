@@ -1,0 +1,872 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="Stockly">
+<meta name="theme-color" content="#FDF8E2">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/stockly-180.png">
+<link rel="icon" type="image/png" sizes="512x512" href="icons/stockly-512.png">
+<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="_ds/restock-design-system-25704bfc-9322-4f35-a631-91d97a20494f/styles.css">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Noto+Sans+Thai:wght@400;500;700&display=swap">
+<script src="_ds/restock-design-system-25704bfc-9322-4f35-a631-91d97a20494f/_ds_bundle.js"></script>
+<script src="config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
+<script src="stockly-backend.js"></script>
+<style>
+html,body{margin:0;height:100%;background:#FDF8E2;font-family:Manrope,'Noto Sans Thai',sans-serif}
+body{overflow:hidden}
+a{color:#504E76}a:hover{color:#C4471A}
+input,select,textarea,button{font-family:Manrope,'Noto Sans Thai',sans-serif}
+@keyframes rs-spin{to{transform:rotate(360deg)}}
+@keyframes rs-fade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+</style>
+</helmet>
+<div style="height:100vh;background:#FDF8E2;color:#26243D;font-family:Manrope,'Noto Sans Thai',sans-serif;overflow:hidden">
+
+<!-- BOOT -->
+<sc-if value="{{ booting }}" hint-placeholder-val="{{ false }}">
+<div style="height:100vh;display:flex;align-items:center;justify-content:center;gap:10px">
+  <svg width="40" height="40" viewBox="0 0 100 100"><g transform="rotate(-8 50 55)"><circle cx="50" cy="55" r="40" fill="#F1642E"></circle><text x="51" y="72" text-anchor="middle" font-family="Figtree" font-weight="900" font-size="46" fill="#FFFDF6">S</text><path d="M58 16 C64 4 80 2 88 6 C84 16 70 22 58 16Z" fill="#A3B565"></path></g></svg>
+  <span style="font:800 30px Figtree;letter-spacing:-0.04em;color:#26243D">stockly</span>
+</div>
+</sc-if>
+
+<!-- AUTH -->
+<sc-if value="{{ signedOut }}" hint-placeholder-val="{{ false }}">
+<div style="height:100vh;overflow:auto;display:flex;align-items:center;justify-content:center;padding:24px;box-sizing:border-box">
+  <div style="width:100%;max-width:420px;display:flex;flex-direction:column;gap:24px;animation:rs-fade .32s cubic-bezier(.2,.8,.2,1)">
+    <div style="display:flex;align-items:center;gap:10px">
+      <svg width="44" height="44" viewBox="0 0 100 100"><g transform="rotate(-8 50 55)"><path d="M50.0 12.5 L58.5 18.0 L68.4 16.7 L73.7 25.3 L83.2 28.5 L84.2 38.5 L91.4 45.5 L88.0 55.0 L91.4 64.5 L84.2 71.5 L83.2 81.5 L73.7 84.7 L68.4 93.3 L58.5 92.0 L50.0 97.5 L41.5 92.0 L31.6 93.3 L26.3 84.7 L16.8 81.5 L15.8 71.5 L8.6 64.5 L12.0 55.0 L8.6 45.5 L15.8 38.5 L16.8 28.5 L26.3 25.3 L31.6 16.7 L41.5 18.0 L50.0 12.5 Z" fill="#F1642E" stroke="#F1642E" stroke-width="3" stroke-linejoin="round"></path><circle cx="50" cy="55" r="31" fill="none" stroke="#FFFDF6" stroke-width="1.8" opacity=".75"></circle><text x="51" y="72" text-anchor="middle" font-family="Figtree" font-weight="900" font-size="46" fill="#FFFDF6">S</text><path d="M58 16 C64 4 80 2 88 6 C84 16 70 22 58 16Z" fill="#A3B565"></path></g></svg>
+      <span style="font:800 34px Figtree;letter-spacing:-0.04em">stockly</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:4px">
+      <div style="font:800 28px/1.15 Figtree;letter-spacing:-0.02em">{{ authTitle }}</div>
+      <div style="font:500 15px/1.5 Manrope;color:#504E76">One shared list for the whole house.</div>
+    </div>
+    <x-import component-from-global-scope="RestockDesignSystem_25704b.SegmentedControl" options="{{ authModes }}" value="{{ authMode }}" on-change="{{ setAuthMode }}" full-width="{{ true }}" hint-size="100%,44px"></x-import>
+    <div style="display:flex;flex-direction:column;gap:14px">
+      <sc-if value="{{ isSignUp }}" hint-placeholder-val="{{ false }}">
+        <x-import component-from-global-scope="RestockDesignSystem_25704b.Input" label="Your name" placeholder="e.g. Jina" value="{{ authName }}" on-change="{{ setAuthName }}" hint-size="100%,72px"></x-import>
+      </sc-if>
+      <x-import component-from-global-scope="RestockDesignSystem_25704b.Input" label="Email" type="email" placeholder="you@home.app" value="{{ authEmail }}" on-change="{{ setAuthEmail }}" error="{{ authError }}" hint-size="100%,72px"></x-import>
+      <x-import component-from-global-scope="RestockDesignSystem_25704b.Input" label="Password" type="password" placeholder="At least 6 characters" value="{{ authPass }}" on-change="{{ setAuthPass }}" hint-size="100%,72px"></x-import>
+      <sc-if value="{{ isSignUp }}" hint-placeholder-val="{{ false }}">
+        <x-import component-from-global-scope="RestockDesignSystem_25704b.Input" label="Household name" placeholder="e.g. Sukhumvit flat" value="{{ authHouse }}" on-change="{{ setAuthHouse }}" hint="Been invited to a house already? Leave this empty and we'll ask you to join it." hint-size="100%,72px"></x-import>
+      </sc-if>
+    </div>
+    <x-import component-from-global-scope="RestockDesignSystem_25704b.Button" variant="primary" size="lg" full-width="{{ true }}" on-click="{{ submitAuth }}" hint-size="100%,56px">{{ authCta }}</x-import>
+    <div style="font:500 13px/1.5 Manrope;color:#8B89A6;text-align:center">{{ authHint }}</div>
+  </div>
+</div>
+</sc-if>
+
+<!-- NO HOUSEHOLD YET -->
+<sc-if value="{{ needsHouse }}" hint-placeholder-val="{{ false }}">
+<div style="height:100vh;overflow:auto;display:flex;align-items:center;justify-content:center;padding:24px;box-sizing:border-box">
+  <div style="width:100%;max-width:440px;display:flex;flex-direction:column;gap:20px;animation:rs-fade .32s cubic-bezier(.2,.8,.2,1)">
+    <div style="display:flex;flex-direction:column;gap:4px"><div style="font:700 11px Manrope;letter-spacing:.12em;color:#504E76">HEY {{ meName }}</div><div style="font:800 28px/1.15 Figtree;letter-spacing:-0.02em">Which house are you shopping for?</div></div>
+    <sc-for list="{{ pendingInvites }}" as="p" hint-placeholder-count="1">
+      <div style="background:#FFFDF6;border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;flex-direction:column;gap:2px"><span style="font:800 18px Figtree;letter-spacing:-0.02em">{{ p.name }}</span><span style="font:500 14px Manrope;color:#504E76">{{ p.by }} invited you · {{ p.count }} in the house</span></div>
+        <div style="display:flex;gap:10px;flex-wrap:wrap"><x-import component-from-global-scope="RestockDesignSystem_25704b.Button" variant="primary" size="md" icon-left="check" on-click="{{ p.join }}" hint-size="auto,48px">Join this house</x-import><x-import component-from-global-scope="RestockDesignSystem_25704b.Button" variant="ghost" size="md" on-click="{{ p.decline }}" hint-size="auto,48px">Not now</x-import></div>
+      </div>
+    </sc-for>
+    <div style="background:#FFFDF6;border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:12px">
+      <span style="font:800 18px Figtree;letter-spacing:-0.02em">{{ createHouseTitle }}</span>
+      <x-import component-from-global-scope="RestockDesignSystem_25704b.Input" label="Household name" placeholder="e.g. Sukhumvit flat" value="{{ newHouseName }}" on-change="{{ setNewHouseName }}" hint-size="100%,72px"></x-import>
+      <x-import component-from-global-scope="RestockDesignSystem_25704b.Button" variant="secondary" size="md" icon-left="house-plus" on-click="{{ createHouse }}" hint-size="auto,48px">Create household</x-import>
+    </div>
+    <x-import component-from-global-scope="RestockDesignSystem_25704b.Button" variant="ghost" size="sm" icon-left="log-out" on-click="{{ signOut }}" hint-size="auto,36px">Sign out</x-import>
+  </div>
+</div>
+</sc-if>
+
+<!-- APP -->
+<sc-if value="{{ signedIn }}" hint-placeholder-val="{{ true }}">
+<div style="display:flex;height:100vh">
+
+  <sc-if value="{{ isWide }}" hint-placeholder-val="{{ false }}">
+  <nav style="width:240px;flex-shrink:0;padding:28px 16px;box-sizing:border-box;display:flex;flex-direction:column;gap:6px;border-right:1.5px solid #E9E0BF;background:#FDF8E2">
+    <div style="display:flex;align-items:center;gap:8px;padding:0 10px 22px">
+      <svg width="30" height="30" viewBox="0 0 100 100"><g transform="rotate(-8 50 55)"><path d="M50.0 12.5 L58.5 18.0 L68.4 16.7 L73.7 25.3 L83.2 28.5 L84.2 38.5 L91.4 45.5 L88.0 55.0 L91.4 64.5 L84.2 71.5 L83.2 81.5 L73.7 84.7 L68.4 93.3 L58.5 92.0 L50.0 97.5 L41.5 92.0 L31.6 93.3 L26.3 84.7 L16.8 81.5 L15.8 71.5 L8.6 64.5 L12.0 55.0 L8.6 45.5 L15.8 38.5 L16.8 28.5 L26.3 25.3 L31.6 16.7 L41.5 18.0 L50.0 12.5 Z" fill="#F1642E"></path><text x="51" y="72" text-anchor="middle" font-family="Figtree" font-weight="900" font-size="46" fill="#FFFDF6">S</text><path d="M58 16 C64 4 80 2 88 6 C84 16 70 22 58 16Z" fill="#A3B565"></path></g></svg>
+      <span style="font:800 24px Figtree;letter-spacing:-0.04em">stockly</span>
+    </div>
+    <sc-for list="{{ navItems }}" as="n" hint-placeholder-count="5">
+      <button onClick="{{ n.go }}" style="display:flex;align-items:center;gap:12px;padding:12px 14px;border:0;border-radius:14px;cursor:pointer;text-align:left;font:700 15px Manrope;color:{{ n.color }};background:{{ n.bg }}"><i class="icon-{{ n.icon }}" style="font-size:20px"></i>{{ n.label }}</button>
+    </sc-for>
+    <div style="flex:1"></div>
+    <x-import component-from-global-scope="RestockDesignSystem_25704b.Button" variant="accent" size="md" icon-left="plus" full-width="{{ true }}" on-click="{{ openAddItem }}" hint-size="100%,48px">Add item</x-import>
+  </nav>
+  </sc-if>
+
+  <main onScroll="{{ onMainScroll }}" onTouchStart="{{ ptrStart }}" onTouchMove="{{ ptrMove }}" onTouchEnd="{{ ptrEnd }}" onTouchCancel="{{ ptrEnd }}" style="flex:1;min-width:0;height:100vh;overflow-y:auto;-webkit-overflow-scrolling:touch;overscroll-behavior-y:contain;padding-top:env(safe-area-inset-top)">
+  <div style="height:{{ ptrHeight }}px;display:flex;align-items:flex-end;justify-content:center;overflow:hidden;transition:{{ ptrTransition }}">
+    <div style="display:flex;align-items:center;gap:8px;padding-bottom:12px;font:700 13px Manrope;color:#504E76;opacity:{{ ptrOpacity }}"><i class="icon-refresh-cw" style="font-size:18px;display:inline-block;transform:rotate({{ ptrRotate }}deg);animation:{{ ptrAnim }}"></i>{{ ptrLabel }}</div>
+  </div>
+  <div style="max-width:{{ contentMax }};margin:0 auto;padding:0 20px 130px;box-sizing:border-box">
+
+    <!-- header -->
+    <header style="position:sticky;top:0;z-index:5;background:#FDF8E2;display:flex;align-items:center;justify-content:space-between;padding:16px 0 12px;gap:12px">
+      <div style="display:flex;flex-direction:column;gap:2px;min-width:0">
+        <div style="font:700 11px Manrope;letter-spacing:.12em;color:#504E76">{{ eyebrow }}</div>
+        <div style="font:800 clamp(22px,7vw,28px)/1.1 Figtree;letter-spacing:-0.03em;overflow-wrap:anywhere">{{ pageTitle }}</div>
+      </div>
+      <div style="display:flex;align-items:center;gap:8px;flex-shrink:0">
+        <div style="position:relative">
+          <x-import component-from-global-scope="RestockDesignSystem_25704b.IconButton" icon="bell" label="Notifications" variant="secondary" size="{{ n44 }}" on-click="{{ openNotifs }}" hint-size="44px,44px"></x-import>
+          <sc-if value="{{ hasUnread }}" hint-placeholder-val="{{ false }}"><span style="position:absolute;top:2px;right:2px;width:10px;height:10px;border-radius:999px;background:#F1642E;border:2px solid #FDF8E2"></span></sc-if>
+        </div>
+        <button onClick="{{ goHouse }}" style="border:0;background:none;padding:0;cursor:pointer"><x-import component-from-global-scope="RestockDesignSystem_25704b.Avatar" name="{{ meName }}" tone="{{ meTone }}" size="{{ n40 }}" hint-size="40px,40px"></x-import></button>
+      </div>
+    </header>
+
+    <!-- HOME -->
+    <sc-if value="{{ tabHome }}" hint-placeholder-val="{{ true }}">
+    <div style="display:flex;flex-direction:column;gap:20px;animation:rs-fade .32s cubic-bezier(.2,.8,.2,1)">
+      <x-import component-from-global-scope="RestockDesignSystem_25704b.GradientCard" gradient="sunset" padding="{{ n24 }}" radius="28px" hint-size="100%,200px">
+        <div style="display:flex;flex-direction:column;gap:18px;color:#26243D">
+          <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:12px">
+            <div style="display:flex;flex-direction:column;gap:4px">
+              <div style="font:700 11px Manrope;letter-spacing:.12em">WEEK OF {{ weekLabel }}</div>
+              <div style="font:800 40px/1 Figtree;letter-spacing:-0.03em;font-variant-numeric:tabular-nums">{{ weekSpentFmt }}</div>
+              <div style="font:500 14px Manrope">spent of {{ weekBudgetFmt }} this week</div>
+            </div>
+            <sc-if value="{{ underBudget }}" hint-placeholder-val="{{ false }}">
+              <x-import component-from-global-scope="RestockDesignSystem_25704b.Sticker" shape="circle" tone="cream" top="UNDER" main="{{ underAmt }}" bottom="BUDGET" size="{{ n84 }}" rotate="{{ n8 }}" hint-size="84px,84px"></x-import>
+            </sc-if>
+          </div>
+          <x-import component-from-global-scope="RestockDesignSystem_25704b.ProgressBar" value="{{ weekSpent }}" max="{{ weekBudget }}" tone="dusk" height="{{ n10 }}" track="rgba(255,253,246,.5)" auto-warn="{{ true }}" hint-size="100%,10px"></x-import>
+          <div style="display:flex;gap:8px;flex-wrap:wrap">
+            <button onClick="{{ goList }}" style="display:flex;align-items:center;gap:8px;border:0;border-radius:999px;padding:10px 16px;background:rgba(255,253,246,.6);backdrop-filter:blur(12px);font:700 14px Manrope;color:#26243D;cursor:pointer"><i class="icon-list-checks" style="font-size:18px"></i>{{ leftCount }} to grab</button>
+            <button onClick="{{ goMenus }}" style="display:flex;align-items:center;gap:8px;border:0;border-radius:999px;padding:10px 16px;background:rgba(255,253,246,.6);backdrop-filter:blur(12px);font:700 14px Manrope;color:#26243D;cursor:pointer"><i class="icon-book-open" style="font-size:18px"></i>{{ weekMenuCount }} menus planned</button>
+          </div>
+        </div>
+      </x-import>
+
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr));gap:16px">
+        <div style="background:#FFFDF6;border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:12px">
+          <div style="display:flex;justify-content:space-between;align-items:center"><span style="font:800 17px Figtree;letter-spacing:-0.02em">This week's menus</span><button onClick="{{ goMenus }}" style="border:0;background:none;font:700 13px Manrope;color:#504E76;cursor:pointer">See all</button></div>
+          <sc-if value="{{ noWeekMenus }}" hint-placeholder-val="{{ false }}"><div style="font:500 14px/1.5 Manrope;color:#504E76">Nothing planned yet. Pick a few menus and we'll build the list for you.</div></sc-if>
+          <sc-for list="{{ weekMenus }}" as="m" hint-placeholder-count="2">
+            <button onClick="{{ m.open }}" style="display:flex;align-items:center;gap:12px;border:0;background:none;padding:0;cursor:pointer;text-align:left">
+              <div style="width:48px;height:48px;border-radius:14px;overflow:hidden;background:{{ m.tint }};display:flex;align-items:center;justify-content:center;font:800 20px Figtree;color:#3A3858;flex-shrink:0"><sc-if value="{{ m.hasPhoto }}" hint-placeholder-val="{{ false }}"><img src="{{ m.photo }}" style="width:100%;height:100%;object-fit:cover"></sc-if><sc-if value="{{ m.noPhoto }}" hint-placeholder-val="{{ true }}">{{ m.initial }}</sc-if></div>
+              <div style="display:flex;flex-direction:column;gap:2px;min-width:0"><span style="font:700 15px Manrope;color:#26243D">{{ m.name }}</span><span style="font:500 13px Manrope;color:#8B89A6">{{ m.portions }} portions · {{ m.ingCount }} ingredients</span></div>
+            </button>
+          </sc-for>
+        </div>
+        <div style="background:#FFFDF6;border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:12px">
+          <span style="font:800 17px Figtree;letter-spacing:-0.02em">Recent activity</span>
+          <sc-for list="{{ recentNotifs }}" as="n" hint-placeholder-count="3">
+            <div style="display:flex;gap:10px;align-items:flex-start">
+              <x-import component-from-global-scope="RestockDesignSystem_25704b.Avatar" name="{{ n.who }}" tone="{{ n.tone }}" size="{{ n28 }}" hint-size="28px,28px"></x-import>
+              <div style="display:flex;flex-direction:column;gap:2px;min-width:0"><span style="font:500 14px/1.4 Manrope;color:#26243D">{{ n.text }}</span><span style="font:500 12px Manrope;color:#8B89A6">{{ n.when }}</span></div>
+            </div>
+          </sc-for>
+        </div>
+      </div>
+
+      <sc-if value="{{ hasRolled }}" hint-placeholder-val="{{ false }}">
+      <div style="background:#FEF0D2;border-radius:20px;padding:16px 18px;display:flex;align-items:center;gap:12px">
+        <i class="icon-refresh-cw" style="font-size:20px;color:#3A3858"></i>
+        <div style="font:500 14px/1.4 Manrope;flex:1">{{ rolledCount }} things rolled over from last week. They're already on this week's list.</div>
+        <x-import component-from-global-scope="RestockDesignSystem_25704b.Button" variant="soft" size="sm" on-click="{{ openRecap }}" hint-size="auto,36px">Last week's recap</x-import>
+      </div>
+      </sc-if>
+    </div>
+    </sc-if>
+
+    <!-- MENUS -->
+    <sc-if value="{{ tabMenus }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-direction:column;gap:18px;animation:rs-fade .32s cubic-bezier(.2,.8,.2,1)">
+      <sc-if value="{{ hasWeekMenus }}" hint-placeholder-val="{{ false }}">
+      <div style="background:#E6ECCD;border-radius:20px;padding:16px 18px;display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center"><span style="font:800 16px Figtree;letter-spacing:-0.02em">This week</span><span style="font:500 13px Manrope;color:#56632C">{{ weekMenuCount }} menus, ingredients on the list</span></div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <sc-for list="{{ weekMenus }}" as="m" hint-placeholder-count="2">
+            <x-import component-from-global-scope="RestockDesignSystem_25704b.Tag" tone="sage" selected="{{ true }}" on-click="{{ m.open }}" on-remove="{{ m.remove }}" hint-size="auto,32px">{{ m.name }} · {{ m.portions }}</x-import>
+          </sc-for>
+        </div>
+      </div>
+      </sc-if>
+      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
+        <div style="flex:1;min-width:min(220px,100%)"><x-import component-from-global-scope="RestockDesignSystem_25704b.Input" placeholder="Search menus or ingredients (ไทยได้)" icon-left="search" value="{{ search }}" on-change="{{ setSearch }}" hint-size="100%,48px"></x-import></div>
+        <x-import component-from-global-scope="RestockDesignSystem_25704b.Button" variant="primary" size="md" icon-left="plus" on-click="{{ openAddMenu }}" hint-size="auto,48px">New menu</x-import>
+      </div>
+      <div style="display:flex;gap:8px;flex-wrap:wrap">
+        <sc-for list="{{ menuFilters }}" as="f" hint-placeholder-count="3">
+          <x-import component-from-global-scope="RestockDesignSystem_25704b.Tag" tone="{{ f.tone }}" selected="{{ f.selected }}" on-click="{{ f.set }}" hint-size="auto,32px">{{ f.label }}</x-import>
+        </sc-for>
+      </div>
+      <div style="font:500 13px Manrope;color:#8B89A6">{{ menuCountLabel }}</div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(150px,100%),1fr));gap:14px">
+        <sc-for list="{{ visibleMenus }}" as="m" hint-placeholder-count="6">
+          <button onClick="{{ m.open }}" style="border:0;padding:0;background:#FFFDF6;border-radius:20px;overflow:hidden;cursor:pointer;text-align:left;display:flex;flex-direction:column;position:relative;transition:transform .2s cubic-bezier(.34,1.56,.64,1)" style-active="transform:scale(.96)">
+            <div style="aspect-ratio:1;width:100%;background:{{ m.tint }};display:flex;align-items:center;justify-content:center;font:800 44px Figtree;color:#3A3858"><sc-if value="{{ m.hasPhoto }}" hint-placeholder-val="{{ false }}"><img src="{{ m.photo }}" style="width:100%;height:100%;object-fit:cover"></sc-if><sc-if value="{{ m.noPhoto }}" hint-placeholder-val="{{ true }}">{{ m.initial }}</sc-if></div>
+            <sc-if value="{{ m.inWeek }}" hint-placeholder-val="{{ false }}"><div style="position:absolute;top:10px;right:10px;background:#7E8F45;color:#FFFDF6;border-radius:999px;padding:4px 10px;font:700 11px Manrope;display:flex;align-items:center;gap:4px"><i class="icon-check" style="font-size:12px"></i>{{ m.portions }}</div></sc-if>
+            <div style="padding:12px 14px 14px;display:flex;flex-direction:column;gap:3px;width:100%;box-sizing:border-box"><span style="font:700 15px/1.3 Manrope;color:#26243D">{{ m.name }}</span><span style="font:500 12px Manrope;color:#8B89A6">{{ m.sub }}</span></div>
+          </button>
+        </sc-for>
+      </div>
+      <sc-if value="{{ moreMenus }}" hint-placeholder-val="{{ false }}"><div style="display:flex;justify-content:center;padding:8px"><x-import component-from-global-scope="RestockDesignSystem_25704b.Button" variant="ghost" size="sm" on-click="{{ loadMoreMenus }}" hint-size="auto,36px">Loading more…</x-import></div></sc-if>
+      <sc-if value="{{ noMenus }}" hint-placeholder-val="{{ false }}"><div style="padding:40px 0;display:flex;flex-direction:column;align-items:center;gap:14px"><x-import component-from-global-scope="RestockDesignSystem_25704b.Sticker" shape="burst" tone="apricot" top="NO" main="MATCH" bottom="YET" size="{{ n96 }}" rotate="{{ n6 }}" hint-size="96px,96px"></x-import><div style="font:500 14px Manrope;color:#504E76">Nothing called "{{ search }}". Want to add it?</div></div></sc-if>
+    </div>
+    </sc-if>
+
+    <!-- LIST -->
+    <sc-if value="{{ tabList }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-direction:column;gap:18px;animation:rs-fade .32s cubic-bezier(.2,.8,.2,1)">
+      <x-import component-from-global-scope="RestockDesignSystem_25704b.SegmentedControl" options="{{ listModes }}" value="{{ listMode }}" on-change="{{ setListMode }}" full-width="{{ true }}" hint-size="100%,44px"></x-import>
+
+      <sc-if value="{{ listShopping }}" hint-placeholder-val="{{ true }}">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+          <div style="font:500 14px Manrope;color:#504E76">{{ leftCount }} things left to grab · {{ boughtCount }} done</div>
+          <x-import component-from-global-scope="RestockDesignSystem_25704b.Button" variant="accent" size="sm" icon-left="plus" on-click="{{ openAddItem }}" hint-size="auto,36px">Add item</x-import>
+        </div>
+        <sc-if value="{{ emptyList }}" hint-placeholder-val="{{ false }}"><div style="padding:40px 0;display:flex;flex-direction:column;align-items:center;gap:14px"><x-import component-from-global-scope="RestockDesignSystem_25704b.Sticker" shape="circle" tone="sage" top="ALL" main="DONE" bottom="NICE" size="{{ n96 }}" rotate="{{ n8 }}" hint-size="96px,96px"></x-import><div style="font:500 14px Manrope;color:#504E76">Nothing on the list. Plan a menu or add something.</div></div></sc-if>
+        <sc-for list="{{ groups }}" as="g" hint-placeholder-count="3">
+          <div style="display:flex;flex-direction:column;gap:8px">
+            <div style="display:flex;align-items:center;gap:10px;padding:4px 0">
+              <div style="width:32px;height:32px;border-radius:10px;background:{{ g.bg }};display:flex;align-items:center;justify-content:center"><i class="icon-{{ g.icon }}" style="font-size:16px;color:#3A3858"></i></div>
+              <span style="font:800 16px Figtree;letter-spacing:-0.02em">{{ g.name }}</span>
+              <span style="font:500 13px Manrope;color:#8B89A6">{{ g.count }}</span>
+            </div>
+            <sc-for list="{{ g.items }}" as="it" hint-placeholder-count="2">
+              <div style="position:relative;border-radius:20px;overflow:hidden">
+                <button onClick="{{ it.remove }}" aria-label="Delete" style="position:absolute;top:0;bottom:0;right:0;width:96px;border:0;background:#F1642E;color:#FFFDF6;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:4px;font:700 12px Manrope;cursor:pointer;opacity:{{ it.delOpacity }}"><i class="icon-trash-2" style="font-size:20px"></i>Delete</button>
+                <div onPointerDown="{{ it.pd }}" onPointerMove="{{ it.pm }}" onPointerUp="{{ it.pu }}" onPointerCancel="{{ it.pu }}" style="position:relative;touch-action:pan-y;background:#FDF8E2;transform:translateX({{ it.x }}px);transition:{{ it.transition }}">
+                  <x-import component-from-global-scope="RestockDesignSystem_25704b.ShoppingItem" name="{{ it.name }}" qty="{{ it.qtyLabel }}" price="{{ it.price }}" note="{{ it.note }}" checked="{{ it.checked }}" on-toggle="{{ it.toggle }}" on-click="{{ it.open }}" added-by="{{ it.addedBy }}" added-by-tone="{{ it.tone }}" hint-size="100%,64px"></x-import>
+                </div>
+              </div>
+            </sc-for>
+          </div>
+        </sc-for>
+      </sc-if>
+
+      <sc-if value="{{ listStock }}" hint-placeholder-val="{{ false }}">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+          <div style="font:500 14px/1.4 Manrope;color:#504E76">Out of something at home? Add it here and it lands on the week's list.</div>
+          <x-import component-from-global-scope="RestockDesignSystem_25704b.Button" variant="accent" size="sm" icon-left="plus" on-click="{{ openAddStock }}" hint-size="auto,36px">Out of stock</x-import>
+        </div>
+        <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(min(150px,100%),1fr));gap:12px">
+          <sc-for list="{{ stockItems }}" as="s" hint-placeholder-count="4">
+            <div style="background:#FFFDF6;border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:10px;border:1.5px solid {{ s.border }}">
+              <div style="display:flex;justify-content:space-between;align-items:flex-start"><div style="width:40px;height:40px;border-radius:12px;background:{{ s.bg }};display:flex;align-items:center;justify-content:center"><i class="icon-{{ s.icon }}" style="font-size:18px;color:#3A3858"></i></div><button onClick="{{ s.remove }}" aria-label="Remove" style="border:0;background:none;color:#8B89A6;cursor:pointer;padding:4px"><i class="icon-x" style="font-size:16px"></i></button></div>
+              <div style="display:flex;flex-direction:column;gap:2px"><span style="font:700 15px Manrope">{{ s.name }}</span><span style="font:500 12px Manrope;color:#8B89A6">{{ s.status }}</span></div>
+              <x-import component-from-global-scope="RestockDesignSystem_25704b.Tag" tone="{{ s.tagTone }}" size="sm" hint-size="auto,24px">{{ s.tag }}</x-import>
+            </div>
+          </sc-for>
+        </div>
+        <sc-if value="{{ noStock }}" hint-placeholder-val="{{ false }}"><div style="padding:30px 0;text-align:center;font:500 14px Manrope;color:#504E76">The cupboards are full. Nothing marked out of stock.</div></sc-if>
+      </sc-if>
+    </div>
+    </sc-if>
+
+    <!-- SPENDING -->
+    <sc-if value="{{ tabSpend }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-direction:column;gap:18px;animation:rs-fade .32s cubic-bezier(.2,.8,.2,1)">
+      <x-import component-from-global-scope="RestockDesignSystem_25704b.SegmentedControl" options="{{ spendModes }}" value="{{ spendMode }}" on-change="{{ setSpendMode }}" full-width="{{ true }}" hint-size="100%,44px"></x-import>
+      <x-import component-from-global-scope="RestockDesignSystem_25704b.GradientCard" gradient="{{ spendGradient }}" padding="{{ n24 }}" radius="28px" hint-size="100%,170px">
+        <div style="display:flex;flex-direction:column;gap:14px;color:{{ spendInk }}">
+          <div style="font:700 11px Manrope;letter-spacing:.12em">{{ spendEyebrow }}</div>
+          <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap"><span style="font:800 44px/1 Figtree;letter-spacing:-0.03em;font-variant-numeric:tabular-nums">{{ spendTotalFmt }}</span><span style="font:500 15px Manrope">of {{ spendBudgetFmt }}</span></div>
+          <x-import component-from-global-scope="RestockDesignSystem_25704b.ProgressBar" value="{{ spendTotal }}" max="{{ spendBudget }}" tone="{{ spendBarTone }}" height="{{ n10 }}" track="rgba(255,253,246,.35)" hint-size="100%,10px"></x-import>
+          <div style="font:600 14px Manrope">{{ spendStatus }}</div>
+        </div>
+      </x-import>
+      <div style="background:#FFFDF6;border-radius:20px;padding:8px 16px;display:flex;flex-direction:column">
+        <sc-for list="{{ catSpend }}" as="c" hint-placeholder-count="5">
+          <x-import component-from-global-scope="RestockDesignSystem_25704b.CategoryBudget" name="{{ c.name }}" icon="{{ c.icon }}" tone="{{ c.tone }}" spent="{{ c.spent }}" budget="{{ c.budget }}" currency="฿" hint-size="100%,64px"></x-import>
+        </sc-for>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px"><span style="font:800 18px Figtree;letter-spacing:-0.02em">Bought {{ spendPeriodWord }}</span><x-import component-from-global-scope="RestockDesignSystem_25704b.Button" variant="soft" size="sm" icon-left="receipt" on-click="{{ openRecap }}" hint-size="auto,36px">Weekly recap</x-import></div>
+      <div style="background:#FFFDF6;border-radius:20px;padding:6px 16px;display:flex;flex-direction:column">
+        <sc-for list="{{ boughtRows }}" as="b" hint-placeholder-count="4">
+          <button onClick="{{ b.open }}" style="display:flex;align-items:center;gap:12px;padding:12px 0;border:0;border-bottom:1px solid #F5EDCC;background:none;cursor:pointer;text-align:left;width:100%">
+            <x-import component-from-global-scope="RestockDesignSystem_25704b.Avatar" name="{{ b.who }}" tone="{{ b.tone }}" size="{{ n32 }}" hint-size="32px,32px"></x-import>
+            <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px"><span style="font:700 15px Manrope;color:#26243D">{{ b.name }}</span><span style="font:500 12px Manrope;color:#8B89A6">{{ b.sub }}</span></div>
+            <span style="font:700 15px Figtree;font-variant-numeric:tabular-nums;color:{{ b.priceColor }}">{{ b.priceLabel }}</span>
+          </button>
+        </sc-for>
+        <sc-if value="{{ noBought }}" hint-placeholder-val="{{ false }}"><div style="padding:24px 0;text-align:center;font:500 14px Manrope;color:#504E76">Nothing bought yet {{ spendPeriodWord }}.</div></sc-if>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- HOUSEHOLD -->
+    <sc-if value="{{ tabHouse }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-direction:column;gap:18px;animation:rs-fade .32s cubic-bezier(.2,.8,.2,1)">
+      <div style="background:#FFFDF6;border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+          <div style="flex:1;min-width:min(200px,100%)"><x-import component-from-global-scope="RestockDesignSystem_25704b.Input" label="Household name" placeholder="e.g. Sukhumvit flat" value="{{ houseDraft }}" on-change="{{ setHouseDraft }}" hint-size="100%,72px"></x-import></div>
+          <x-import component-from-global-scope="RestockDesignSystem_25704b.Button" variant="secondary" size="md" on-click="{{ saveHouseName }}" hint-size="auto,48px">Rename</x-import>
+        </div>
+        <div style="display:flex;justify-content:space-between;align-items:center"><span style="font:800 17px Figtree;letter-spacing:-0.02em">People</span><span style="font:500 13px Manrope;color:#8B89A6">{{ memberCount }} in the house</span></div>
+        <sc-for list="{{ members }}" as="p" hint-placeholder-count="2">
+          <div style="display:flex;align-items:center;gap:12px;flex-wrap:wrap">
+            <x-import component-from-global-scope="RestockDesignSystem_25704b.Avatar" name="{{ p.name }}" tone="{{ p.tone }}" size="{{ n40 }}" hint-size="40px,40px"></x-import>
+            <div style="flex:1;min-width:120px;display:flex;flex-direction:column"><span style="font:700 15px Manrope">{{ p.name }}</span><span style="font:500 12px Manrope;color:#8B89A6">{{ p.email }}</span></div>
+            <sc-if value="{{ p.isMe }}" hint-placeholder-val="{{ false }}"><x-import component-from-global-scope="RestockDesignSystem_25704b.Tag" tone="lavender" size="sm" hint-size="auto,24px">You</x-import></sc-if>
+            <sc-if value="{{ p.canActAs }}" hint-placeholder-val="{{ false }}"><x-import component-from-global-scope="RestockDesignSystem_25704b.Button" variant="ghost" size="sm" on-click="{{ p.switchTo }}" hint-size="auto,36px">Act as (demo)</x-import></sc-if>
+          </div>
+        </sc-for>
+        <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+          <div style="flex:1;min-width:min(200px,100%)"><x-import component-from-global-scope="RestockDesignSystem_25704b.Input" label="Invite someone" placeholder="their@email.com" type="email" value="{{ inviteEmail }}" on-change="{{ setInviteEmail }}" hint="They get asked to join. Nobody is added without saying yes." hint-size="100%,72px"></x-import></div>
+          <x-import component-from-global-scope="RestockDesignSystem_25704b.Button" variant="primary" size="md" icon-left="user-plus" on-click="{{ sendInvite }}" hint-size="auto,48px">Invite</x-import>
+        </div>
+        <sc-if value="{{ hasInvites }}" hint-placeholder-val="{{ false }}"><div style="display:flex;gap:8px;flex-wrap:wrap"><sc-for list="{{ invites }}" as="i" hint-placeholder-count="1"><x-import component-from-global-scope="RestockDesignSystem_25704b.Tag" tone="{{ i.tone }}" size="sm" icon="mail" on-remove="{{ i.cancel }}" hint-size="auto,24px">{{ i.email }} · {{ i.label }}</x-import></sc-for></div></sc-if>
+      </div>
+
+      <div style="background:#FFFDF6;border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:14px">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap"><span style="font:800 17px Figtree;letter-spacing:-0.02em">Notifications on this phone</span><x-import component-from-global-scope="RestockDesignSystem_25704b.Tag" tone="{{ pushTone }}" size="sm" icon="{{ pushIcon }}" hint-size="auto,24px">{{ pushStatus }}</x-import></div>
+        <div style="font:500 14px/1.5 Manrope;color:#504E76;text-wrap:pretty">{{ pushHelp }}</div>
+        <sc-if value="{{ pushCanAsk }}" hint-placeholder-val="{{ true }}"><x-import component-from-global-scope="RestockDesignSystem_25704b.Button" variant="primary" size="md" icon-left="bell-ring" on-click="{{ enablePush }}" hint-size="auto,48px">Turn on notifications</x-import></sc-if>
+        <sc-if value="{{ pushOn }}" hint-placeholder-val="{{ false }}">
+          <div style="display:flex;flex-direction:column;gap:10px">
+            <x-import component-from-global-scope="RestockDesignSystem_25704b.Checkbox" checked="{{ prefAdded }}" on-change="{{ setPrefAdded }}" label="Someone adds to the list" hint-size="100%,24px"></x-import>
+            <x-import component-from-global-scope="RestockDesignSystem_25704b.Checkbox" checked="{{ prefBought }}" on-change="{{ setPrefBought }}" label="Someone buys something" hint-size="100%,24px"></x-import>
+            <x-import component-from-global-scope="RestockDesignSystem_25704b.Checkbox" checked="{{ prefRecap }}" on-change="{{ setPrefRecap }}" label="Sunday 8pm weekly recap" hint-size="100%,24px"></x-import>
+          </div>
+          <x-import component-from-global-scope="RestockDesignSystem_25704b.Button" variant="soft" size="sm" icon-left="bell" on-click="{{ testPush }}" hint-size="auto,36px">Send a test</x-import>
+        </sc-if>
+      </div>
+
+      <div style="background:#FFFDF6;border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:14px">
+        <span style="font:800 17px Figtree;letter-spacing:-0.02em">Budget</span>
+        <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+          <div style="flex:1;min-width:min(160px,100%)"><x-import component-from-global-scope="RestockDesignSystem_25704b.Input" label="Monthly budget" prefix="฿" type="number" value="{{ budgetDraft }}" on-change="{{ setBudgetDraft }}" hint="About {{ weekBudgetFmt }} a week" hint-size="100%,72px"></x-import></div>
+          <x-import component-from-global-scope="RestockDesignSystem_25704b.Button" variant="secondary" size="md" on-click="{{ saveBudget }}" hint-size="auto,48px">Save</x-import>
+        </div>
+      </div>
+
+      <div style="background:#FFFDF6;border-radius:20px;padding:18px;display:flex;flex-direction:column;gap:14px">
+        <span style="font:800 17px Figtree;letter-spacing:-0.02em">Categories</span>
+        <div style="display:flex;flex-wrap:wrap;gap:8px">
+          <sc-for list="{{ catChips }}" as="c" hint-placeholder-count="5">
+            <x-import component-from-global-scope="RestockDesignSystem_25704b.Tag" tone="{{ c.tone }}" icon="{{ c.icon }}" on-remove="{{ c.remove }}" hint-size="auto,32px">{{ c.name }}</x-import>
+          </sc-for>
+        </div>
+        <div style="display:flex;gap:10px;align-items:flex-end;flex-wrap:wrap">
+          <div style="flex:1;min-width:min(200px,100%)"><x-import component-from-global-scope="RestockDesignSystem_25704b.Input" label="New category" placeholder="e.g. Pet food, ของใช้เด็ก" value="{{ newCat }}" on-change="{{ setNewCat }}" hint-size="100%,72px"></x-import></div>
+          <x-import component-from-global-scope="RestockDesignSystem_25704b.Button" variant="secondary" size="md" icon-left="plus" on-click="{{ addCategory }}" hint-size="auto,48px">Add</x-import>
+        </div>
+      </div>
+
+      <div style="display:flex;gap:10px;flex-wrap:wrap">
+        <x-import component-from-global-scope="RestockDesignSystem_25704b.Button" variant="ghost" size="md" icon-left="log-out" on-click="{{ signOut }}" hint-size="auto,48px">Sign out</x-import>
+        <sc-if value="{{ isDemo }}" hint-placeholder-val="{{ true }}"><x-import component-from-global-scope="RestockDesignSystem_25704b.Button" variant="ghost" size="md" icon-left="rotate-ccw" on-click="{{ resetDemo }}" hint-size="auto,48px">Reset demo data</x-import></sc-if>
+      </div>
+    </div>
+    </sc-if>
+
+  </div>
+  </main>
+</div>
+
+<sc-if value="{{ isNarrow }}" hint-placeholder-val="{{ true }}">
+  <div style="position:fixed;left:0;right:0;bottom:0;z-index:20;pointer-events:none">
+    <div style="pointer-events:auto"><x-import component-from-global-scope="RestockDesignSystem_25704b.TabBar" items="{{ tabItems }}" active="{{ tab }}" on-change="{{ setTab }}" floating="{{ true }}" hint-size="100%,80px"></x-import></div>
+  </div>
+  <div style="position:fixed;right:20px;bottom:100px;z-index:21">
+    <x-import component-from-global-scope="RestockDesignSystem_25704b.IconButton" icon="plus" label="Add item" variant="accent" size="{{ n56 }}" on-click="{{ openAddItem }}" hint-size="56px,56px"></x-import>
+  </div>
+</sc-if>
+
+<!-- SHEET: add item -->
+<x-import component-from-global-scope="RestockDesignSystem_25704b.Sheet" open="{{ sheetAddItem }}" on-close="{{ closeSheet }}" title="Add to this week's list" hint-size="0px,0px">
+  <div style="display:flex;flex-direction:column;gap:14px;padding-bottom:8px;min-width:0;overflow-x:hidden">
+    <x-import component-from-global-scope="RestockDesignSystem_25704b.Input" label="What do we need?" placeholder="e.g. Tissue paper, น้ำปลา" value="{{ fName }}" on-change="{{ setFName }}" hint-size="100%,72px"></x-import>
+    <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px">
+      <x-import component-from-global-scope="RestockDesignSystem_25704b.Input" label="How many" type="number" value="{{ fQty }}" on-change="{{ setFQty }}" hint-size="100%,72px"></x-import>
+      <x-import component-from-global-scope="RestockDesignSystem_25704b.Select" label="Unit" options="{{ unitOptions }}" value="{{ fUnit }}" on-change="{{ setFUnit }}" hint-size="100%,72px"></x-import>
+    </div>
+    <x-import component-from-global-scope="RestockDesignSystem_25704b.Select" label="Category" options="{{ catOptions }}" value="{{ fCat }}" on-change="{{ setFCat }}" hint-size="100%,72px"></x-import>
+    <x-import component-from-global-scope="RestockDesignSystem_25704b.Button" variant="primary" size="lg" full-width="{{ true }}" on-click="{{ submitAddItem }}" hint-size="100%,56px">Add item</x-import>
+  </div>
+</x-import>
+
+<!-- SHEET: out of stock -->
+<x-import component-from-global-scope="RestockDesignSystem_25704b.Sheet" open="{{ sheetAddStock }}" on-close="{{ closeSheet }}" title="Out of stock at home" hint-size="0px,0px">
+  <div style="display:flex;flex-direction:column;gap:14px;padding-bottom:8px;min-width:0;overflow-x:hidden">
+    <x-import component-from-global-scope="RestockDesignSystem_25704b.Input" label="What ran out?" placeholder="e.g. Dish soap" value="{{ fName }}" on-change="{{ setFName }}" hint-size="100%,72px"></x-import>
+    <div style="display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:10px">
+      <x-import component-from-global-scope="RestockDesignSystem_25704b.Input" label="How many to buy" type="number" value="{{ fQty }}" on-change="{{ setFQty }}" hint-size="100%,72px"></x-import>
+      <x-import component-from-global-scope="RestockDesignSystem_25704b.Select" label="Unit" options="{{ unitOptions }}" value="{{ fUnit }}" on-change="{{ setFUnit }}" hint-size="100%,72px"></x-import>
+    </div>
+    <x-import component-from-global-scope="RestockDesignSystem_25704b.Select" label="Category" options="{{ catOptions }}" value="{{ fCat }}" on-change="{{ setFCat }}" hint-size="100%,72px"></x-import>
+    <div style="font:500 13px/1.5 Manrope;color:#504E76">It goes straight onto this week's shopping list.</div>
+    <x-import component-from-global-scope="RestockDesignSystem_25704b.Button" variant="primary" size="lg" full-width="{{ true }}" on-click="{{ submitAddStock }}" hint-size="100%,56px">Add to list</x-import>
+  </div>
+</x-import>
+
+<!-- SHEET: buy / item detail -->
+<x-import component-from-global-scope="RestockDesignSystem_25704b.Sheet" open="{{ sheetBuy }}" on-close="{{ closeSheet }}" title="{{ buyTitle }}" hint-size="0px,0px">
+  <div style="display:flex;flex-direction:column;gap:18px;padding-bottom:8px;min-width:0;overflow-x:hidden">
+    <div style="display:flex;align-items:center;gap:10px;flex-wrap:wrap">
+      <x-import component-from-global-scope="RestockDesignSystem_25704b.Tag" tone="{{ buyCatTone }}" icon="{{ buyCatIcon }}" size="sm" hint-size="auto,24px">{{ buyCat }}</x-import>
+      <span style="font:500 13px Manrope;color:#8B89A6">{{ buyMeta }}</span>
+    </div>
+    <sc-if value="{{ buyHasRemaining }}" hint-placeholder-val="{{ true }}">
+      <div style="background:#FDF8E2;border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:12px">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+          <div style="display:flex;flex-direction:column"><span style="font:700 15px Manrope">How many did you get?</span><span style="font:500 13px Manrope;color:#504E76">{{ buyNeedLabel }}</span></div>
+          <x-import component-from-global-scope="RestockDesignSystem_25704b.Stepper" value="{{ buyQty }}" on-change="{{ setBuyQty }}" min="{{ n0 }}" max="{{ buyMax }}" unit="{{ buyUnit }}" hint-size="auto,44px"></x-import>
+        </div>
+        <sc-if value="{{ buyPartial }}" hint-placeholder-val="{{ false }}"><div style="font:500 13px/1.4 Manrope;color:#C4471A">{{ buyLeftLabel }} will stay on the list. No stress, it happens.</div></sc-if>
+      </div>
+    </sc-if>
+    <x-import component-from-global-scope="RestockDesignSystem_25704b.Input" label="Price (optional)" prefix="฿" type="number" placeholder="0" value="{{ buyPrice }}" on-change="{{ setBuyPrice }}" hint="You can fill this in after the shop." hint-size="100%,72px"></x-import>
+    <sc-if value="{{ buyHasRemaining }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <x-import component-from-global-scope="RestockDesignSystem_25704b.Button" variant="primary" size="lg" full-width="{{ true }}" icon-left="check" on-click="{{ submitBuyAll }}" hint-size="100%,56px">{{ buyAllLabel }}</x-import>
+        <sc-if value="{{ buyPartial }}" hint-placeholder-val="{{ false }}"><x-import component-from-global-scope="RestockDesignSystem_25704b.Button" variant="secondary" size="lg" full-width="{{ true }}" on-click="{{ submitBuyPartial }}" hint-size="100%,56px">{{ buyPartialLabel }}</x-import></sc-if>
+      </div>
+    </sc-if>
+    <sc-if value="{{ buyDone }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <x-import component-from-global-scope="RestockDesignSystem_25704b.Button" variant="primary" size="lg" full-width="{{ true }}" on-click="{{ submitPrice }}" hint-size="100%,56px">Save price</x-import>
+        <x-import component-from-global-scope="RestockDesignSystem_25704b.Button" variant="ghost" size="md" full-width="{{ true }}" icon-left="undo-2" on-click="{{ unbuyItem }}" hint-size="100%,48px">Put it back on the list</x-import>
+      </div>
+    </sc-if>
+    <x-import component-from-global-scope="RestockDesignSystem_25704b.Button" variant="ghost" size="sm" icon-left="trash-2" on-click="{{ deleteItem }}" hint-size="auto,36px">Remove from list</x-import>
+  </div>
+</x-import>
+
+<!-- SHEET: menu detail -->
+<x-import component-from-global-scope="RestockDesignSystem_25704b.Sheet" open="{{ sheetMenu }}" on-close="{{ closeSheet }}" title="{{ mdName }}" hint-size="0px,0px">
+  <div style="display:flex;flex-direction:column;gap:18px;padding-bottom:8px;min-width:0;overflow-x:hidden">
+    <div style="width:100%;height:200px;border-radius:20px;overflow:hidden;background:{{ mdTint }};display:flex;align-items:center;justify-content:center;font:800 56px Figtree;color:#3A3858;position:relative">
+      <sc-if value="{{ mdHasPhoto }}" hint-placeholder-val="{{ false }}"><img src="{{ mdPhoto }}" style="width:100%;height:100%;object-fit:cover"></sc-if>
+      <sc-if value="{{ mdNoPhoto }}" hint-placeholder-val="{{ true }}">{{ mdInitial }}</sc-if>
+      <div style="position:absolute;right:12px;bottom:12px"><x-import component-from-global-scope="RestockDesignSystem_25704b.Button" variant="soft" size="sm" icon-left="camera" on-click="{{ pickMenuPhoto }}" hint-size="auto,36px">{{ mdPhotoCta }}</x-import></div>
+    </div>
+    <sc-if value="{{ mdHasTh }}" hint-placeholder-val="{{ false }}"><div style="font:500 16px 'Noto Sans Thai',Manrope;color:#504E76;margin-top:-8px">{{ mdNameTh }}</div></sc-if>
+    <div style="background:#FDF8E2;border-radius:20px;padding:16px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap">
+      <div style="display:flex;flex-direction:column"><span style="font:700 15px Manrope">Portions this week</span><span style="font:500 13px Manrope;color:#504E76">Recipe makes {{ mdBasePortions }}</span></div>
+      <x-import component-from-global-scope="RestockDesignSystem_25704b.Stepper" value="{{ mdPortions }}" on-change="{{ setMdPortions }}" min="{{ n1 }}" max="{{ n20 }}" hint-size="auto,44px"></x-import>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <span style="font:800 16px Figtree;letter-spacing:-0.02em">Goes on the list · for {{ mdPortions }}</span>
+      <sc-for list="{{ mdIngredients }}" as="i" hint-placeholder-count="4">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:10px 0;border-bottom:1px solid #F5EDCC;gap:12px">
+          <div style="display:flex;align-items:center;gap:10px;min-width:0"><div style="width:28px;height:28px;border-radius:8px;background:{{ i.bg }};display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="icon-{{ i.icon }}" style="font-size:14px;color:#3A3858"></i></div><span style="font:600 15px Manrope">{{ i.name }}</span></div>
+          <span style="font:700 14px Figtree;font-variant-numeric:tabular-nums;color:#504E76;white-space:nowrap">{{ i.qtyLabel }}</span>
+        </div>
+      </sc-for>
+    </div>
+    <sc-if value="{{ mdHasStaples }}" hint-placeholder-val="{{ false }}">
+    <div style="background:#FEF0D2;border-radius:20px;padding:14px 16px;display:flex;flex-direction:column;gap:4px">
+      <span style="font:800 16px Figtree;letter-spacing:-0.02em">Probably in the pantry</span>
+      <span style="font:500 13px/1.4 Manrope;color:#504E76">Staples aren't added to the list. Out of one? Tap it.</span>
+      <sc-for list="{{ mdStaples }}" as="i" hint-placeholder-count="2">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #FCDD9D;gap:12px">
+          <div style="display:flex;flex-direction:column;min-width:0"><span style="font:600 15px Manrope">{{ i.name }}</span><span style="font:500 12px Manrope;color:#8B89A6">{{ i.qtyLabel }} needed</span></div>
+          <sc-if value="{{ i.notOnList }}" hint-placeholder-val="{{ true }}"><x-import component-from-global-scope="RestockDesignSystem_25704b.Button" variant="soft" size="sm" icon-left="plus" on-click="{{ i.addOut }}" hint-size="auto,36px">Out, add it</x-import></sc-if>
+          <sc-if value="{{ i.onList }}" hint-placeholder-val="{{ false }}"><x-import component-from-global-scope="RestockDesignSystem_25704b.Tag" tone="sage" size="sm" icon="check" hint-size="auto,24px">On the list</x-import></sc-if>
+        </div>
+      </sc-for>
+    </div>
+    </sc-if>
+    <sc-if value="{{ mdInWeek }}" hint-placeholder-val="{{ false }}">
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <x-import component-from-global-scope="RestockDesignSystem_25704b.Button" variant="primary" size="lg" full-width="{{ true }}" icon-left="check" on-click="{{ updateWeekMenu }}" hint-size="100%,56px">Update portions on the list</x-import>
+        <x-import component-from-global-scope="RestockDesignSystem_25704b.Button" variant="secondary" size="md" full-width="{{ true }}" on-click="{{ removeWeekMenu }}" hint-size="100%,48px">Remove from this week</x-import>
+      </div>
+    </sc-if>
+    <sc-if value="{{ mdNotInWeek }}" hint-placeholder-val="{{ true }}">
+      <x-import component-from-global-scope="RestockDesignSystem_25704b.Button" variant="primary" size="lg" full-width="{{ true }}" icon-left="calendar-plus" on-click="{{ addWeekMenu }}" hint-size="100%,56px">Cook this week · add to list</x-import>
+    </sc-if>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <x-import component-from-global-scope="RestockDesignSystem_25704b.Button" variant="secondary" size="sm" icon-left="pencil" on-click="{{ editMenu }}" hint-size="auto,36px">Edit menu</x-import>
+      <x-import component-from-global-scope="RestockDesignSystem_25704b.Button" variant="ghost" size="sm" icon-left="trash-2" on-click="{{ deleteMenu }}" hint-size="auto,36px">Delete menu</x-import>
+    </div>
+  </div>
+</x-import>
+
+<!-- SHEET: new menu -->
+<x-import component-from-global-scope="RestockDesignSystem_25704b.Sheet" open="{{ sheetAddMenu }}" on-close="{{ closeSheet }}" title="{{ nmTitle }}" hint-size="0px,0px">
+  <div style="display:flex;flex-direction:column;gap:16px;padding-bottom:8px;min-width:0;overflow-x:hidden">
+    <button onClick="{{ pickMenuPhoto }}" style="width:100%;height:180px;border-radius:20px;border:1.5px dashed #D8CEA6;background:{{ nmTint }};cursor:pointer;display:flex;align-items:center;justify-content:center;overflow:hidden;padding:0">
+      <sc-if value="{{ nmHasPhoto }}" hint-placeholder-val="{{ false }}"><img src="{{ nmPhoto }}" style="width:100%;height:100%;object-fit:cover"></sc-if>
+      <sc-if value="{{ nmNoPhoto }}" hint-placeholder-val="{{ true }}"><div style="display:flex;flex-direction:column;align-items:center;gap:6px;color:#504E76"><i class="icon-camera" style="font-size:28px"></i><span style="font:700 14px Manrope">Add a photo of the dish</span></div></sc-if>
+    </button>
+    <x-import component-from-global-scope="RestockDesignSystem_25704b.Input" label="Menu name" placeholder="e.g. Pad Kra Pow / ผัดกะเพรา" value="{{ nmName }}" on-change="{{ setNmName }}" hint-size="100%,72px"></x-import>
+    <div style="background:#FDF8E2;border-radius:20px;padding:14px 16px;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:10px"><span style="font:700 15px Manrope">Recipe makes</span><x-import component-from-global-scope="RestockDesignSystem_25704b.Stepper" value="{{ nmPortions }}" on-change="{{ setNmPortions }}" min="{{ n1 }}" max="{{ n20 }}" unit="portions" hint-size="auto,44px"></x-import></div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <span style="font:800 16px Figtree;letter-spacing:-0.02em">Ingredients</span>
+      <sc-for list="{{ nmRows }}" as="r" hint-placeholder-count="2">
+        <div style="background:#FFFDF6;border:1.5px solid #E9E0BF;border-radius:20px;padding:12px;display:flex;flex-direction:column;gap:10px">
+          <div style="display:flex;gap:8px;align-items:flex-end"><div style="flex:1"><x-import component-from-global-scope="RestockDesignSystem_25704b.Input" placeholder="Ingredient" value="{{ r.name }}" on-change="{{ r.setName }}" hint-size="100%,48px"></x-import></div><x-import component-from-global-scope="RestockDesignSystem_25704b.IconButton" icon="x" label="Remove" variant="ghost" size="{{ n40 }}" on-click="{{ r.remove }}" hint-size="40px,40px"></x-import></div>
+          <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(min(96px,100%),1fr));gap:8px">
+            <x-import component-from-global-scope="RestockDesignSystem_25704b.Input" placeholder="Qty" type="number" value="{{ r.qty }}" on-change="{{ r.setQty }}" hint-size="100%,48px"></x-import>
+            <x-import component-from-global-scope="RestockDesignSystem_25704b.Select" options="{{ unitOptions }}" value="{{ r.unit }}" on-change="{{ r.setUnit }}" hint-size="100%,48px"></x-import>
+            <x-import component-from-global-scope="RestockDesignSystem_25704b.Select" options="{{ catOptions }}" value="{{ r.cat }}" on-change="{{ r.setCat }}" hint-size="100%,48px"></x-import>
+          </div>
+          <x-import component-from-global-scope="RestockDesignSystem_25704b.Checkbox" checked="{{ r.staple }}" on-change="{{ r.setStaple }}" label="Pantry staple, usually at home (not added to the list)" hint-size="100%,24px"></x-import>
+        </div>
+      </sc-for>
+      <x-import component-from-global-scope="RestockDesignSystem_25704b.Button" variant="soft" size="md" icon-left="plus" on-click="{{ addNmRow }}" hint-size="auto,48px">Add ingredient</x-import>
+      <div style="font:500 13px/1.5 Manrope;color:#8B89A6">Quantities are optional. Staples like oyster sauce or rice stay off the list; you add them only when you run out.</div>
+    </div>
+    <x-import component-from-global-scope="RestockDesignSystem_25704b.Button" variant="primary" size="lg" full-width="{{ true }}" on-click="{{ submitNewMenu }}" hint-size="100%,56px">{{ nmCta }}</x-import>
+  </div>
+</x-import>
+
+<!-- SHEET: invite prompt -->
+<x-import component-from-global-scope="RestockDesignSystem_25704b.Sheet" open="{{ sheetInvite }}" on-close="{{ closeSheet }}" title="You're invited" hint-size="0px,0px">
+  <div style="display:flex;flex-direction:column;gap:16px;padding-bottom:8px">
+    <div style="font:500 15px/1.5 Manrope;color:#26243D;text-wrap:pretty"><strong>{{ invitePrompt.by }}</strong> invited you to join <strong>{{ invitePrompt.name }}</strong> ({{ invitePrompt.count }} in the house). Joining moves you out of your current house.</div>
+    <x-import component-from-global-scope="RestockDesignSystem_25704b.Button" variant="primary" size="lg" full-width="{{ true }}" icon-left="check" on-click="{{ invitePrompt.join }}" hint-size="100%,56px">Join {{ invitePrompt.name }}</x-import>
+    <x-import component-from-global-scope="RestockDesignSystem_25704b.Button" variant="ghost" size="md" full-width="{{ true }}" on-click="{{ invitePrompt.decline }}" hint-size="100%,48px">Not now</x-import>
+  </div>
+</x-import>
+
+<!-- SHEET: notifications -->
+<x-import component-from-global-scope="RestockDesignSystem_25704b.Sheet" open="{{ sheetNotifs }}" on-close="{{ closeSheet }}" title="Notifications" hint-size="0px,0px">
+  <div style="display:flex;flex-direction:column;padding-bottom:8px">
+    <sc-for list="{{ allNotifs }}" as="n" hint-placeholder-count="5">
+      <div style="display:flex;gap:12px;align-items:flex-start;padding:12px 0;border-bottom:1px solid #F5EDCC">
+        <x-import component-from-global-scope="RestockDesignSystem_25704b.Avatar" name="{{ n.who }}" tone="{{ n.tone }}" size="{{ n32 }}" hint-size="32px,32px"></x-import>
+        <div style="flex:1;display:flex;flex-direction:column;gap:2px"><span style="font:500 14px/1.4 Manrope;color:#26243D">{{ n.text }}</span><span style="font:500 12px Manrope;color:#8B89A6">{{ n.when }}</span></div>
+        <sc-if value="{{ n.unread }}" hint-placeholder-val="{{ false }}"><span style="width:8px;height:8px;border-radius:999px;background:#F1642E;margin-top:6px"></span></sc-if>
+      </div>
+    </sc-for>
+    <div style="font:500 13px/1.5 Manrope;color:#8B89A6;padding-top:14px">Push notifications and the Sunday 8pm recap need the backend; this list shows what will be sent.</div>
+  </div>
+</x-import>
+
+<!-- SHEET: weekly recap -->
+<x-import component-from-global-scope="RestockDesignSystem_25704b.Sheet" open="{{ sheetRecap }}" on-close="{{ closeSheet }}" title="Weekly recap" hint-size="0px,0px">
+  <div style="display:flex;flex-direction:column;gap:16px;padding-bottom:8px;min-width:0;overflow-x:hidden">
+    <x-import component-from-global-scope="RestockDesignSystem_25704b.GradientCard" gradient="meadow" padding="{{ n20 }}" radius="20px" hint-size="100%,140px">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;color:#26243D">
+        <div style="display:flex;flex-direction:column;gap:4px"><div style="font:700 11px Manrope;letter-spacing:.12em">WEEK OF {{ recapWeekLabel }}</div><div style="font:800 36px/1 Figtree;letter-spacing:-0.03em;font-variant-numeric:tabular-nums">{{ recapTotalFmt }}</div><div style="font:500 14px Manrope">{{ recapStatus }}</div></div>
+        <sc-if value="{{ recapUnder }}" hint-placeholder-val="{{ false }}"><x-import component-from-global-scope="RestockDesignSystem_25704b.Sticker" shape="burst" tone="tangerine" top="NICE" main="WORK" bottom="TEAM" size="{{ n84 }}" rotate="{{ n8 }}" hint-size="84px,84px"></x-import></sc-if>
+      </div>
+    </x-import>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <span style="font:800 16px Figtree;letter-spacing:-0.02em">By category</span>
+      <sc-for list="{{ recapCats }}" as="c" hint-placeholder-count="3">
+        <div style="display:flex;justify-content:space-between;align-items:center;padding:8px 0;border-bottom:1px solid #F5EDCC"><div style="display:flex;align-items:center;gap:10px"><div style="width:28px;height:28px;border-radius:8px;background:{{ c.bg }};display:flex;align-items:center;justify-content:center"><i class="icon-{{ c.icon }}" style="font-size:14px;color:#3A3858"></i></div><span style="font:600 15px Manrope">{{ c.name }}</span></div><span style="font:700 15px Figtree;font-variant-numeric:tabular-nums">{{ c.spentFmt }}</span></div>
+      </sc-for>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <span style="font:800 16px Figtree;letter-spacing:-0.02em">Bought ({{ recapBoughtCount }})</span>
+      <sc-for list="{{ recapBought }}" as="b" hint-placeholder-count="3">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;padding:6px 0"><span style="font:500 14px Manrope">{{ b.name }} <span style="color:#8B89A6">· {{ b.who }}</span></span><span style="font:700 14px Figtree;font-variant-numeric:tabular-nums;color:#504E76">{{ b.priceLabel }}</span></div>
+      </sc-for>
+    </div>
+    <div style="background:#FEF0D2;border-radius:20px;padding:16px;display:flex;flex-direction:column;gap:8px">
+      <span style="font:800 16px Figtree;letter-spacing:-0.02em">Rolling over to next week ({{ recapLeftCount }})</span>
+      <sc-for list="{{ recapLeft }}" as="l" hint-placeholder-count="2">
+        <div style="font:500 14px Manrope">{{ l.name }} <span style="color:#504E76">· {{ l.qtyLabel }}</span></div>
+      </sc-for>
+      <sc-if value="{{ recapNoneLeft }}" hint-placeholder-val="{{ false }}"><div style="font:500 14px Manrope;color:#504E76">Nothing. The whole list got done.</div></sc-if>
+    </div>
+    <div style="font:500 13px/1.5 Manrope;color:#8B89A6">This recap is sent to everyone in the house on Sunday at 8pm.</div>
+  </div>
+</x-import>
+
+<input type="file" accept="image/*" ref="{{ photoRef }}" onChange="{{ onPhotoPicked }}" style="display:none">
+</sc-if>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;showRecap&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Demo&quot;},&quot;startSignedOut&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:false,&quot;tsType&quot;:&quot;boolean&quot;,&quot;section&quot;:&quot;Demo&quot;}}">
+const LS='restock.v1',SS='restock.session';
+const TONES=['lavender','sage','apricot','tangerine','dusk'];
+const TINT={sage:'#E6ECCD',lavender:'#E4E3F2',apricot:'#FEF0D2',tangerine:'#FDE1D4',dusk:'#F3F2FA'};
+const UNITS=['pcs','g','kg','ml','L','pack','bunch','tbsp','cup'];
+const CATS=[{id:'veg',name:'Vegetables',icon:'carrot',tone:'sage'},{id:'meat',name:'Meats',icon:'beef',tone:'tangerine'},{id:'dairy',name:'Dairy & eggs',icon:'milk',tone:'lavender'},{id:'pantry',name:'Pantry',icon:'wheat',tone:'apricot'},{id:'house',name:'Household',icon:'spray-can',tone:'dusk'}];
+const STAPLE=/sauce|paste|oil|sugar|syrup|mirin|flour|rice powder|jasmine rice|sesame seeds|dried shrimp/i;
+const isStaple=i=>i.staple!=null?!!i.staple:(i.unit==='tbsp'||STAPLE.test(i.name));
+const uid=()=>(typeof crypto!=='undefined'&&crypto.randomUUID)?crypto.randomUUID():Math.random().toString(36).slice(2,10);
+const EMPTY=()=>({users:[],households:[],menus:[],items:[],stock:[],weekPlans:{},notifs:[],_backend:true});
+const STARTER=()=>MENUS.map(m=>({name:m[0],nameTh:m[1],portions:m[2],ingredients:m[3].map(x=>({name:x[0],qty:x[1],unit:x[2],categoryId:x[3],staple:isStaple({name:x[0],unit:x[2]})}))}));
+const fmt=n=>'฿'+Math.round(n||0).toLocaleString('en-US');
+const DAY=864e5;
+const weekStart=d=>{const x=new Date(d);x.setHours(0,0,0,0);const dow=(x.getDay()+6)%7;x.setDate(x.getDate()-dow);return x.getTime();};
+const monthStart=d=>{const x=new Date(d);x.setDate(1);x.setHours(0,0,0,0);return x.getTime();};
+const fmtQ=n=>Number.isInteger(n)?String(n):String(Math.round(n*10)/10);
+const ago=t=>{const s=(Date.now()-t)/1000;if(s<60)return'Just now';if(s<3600)return Math.floor(s/60)+'m ago';if(s<86400)return Math.floor(s/3600)+'h ago';const d=Math.floor(s/86400);return d===1?'Yesterday':d+' days ago';};
+const MENUS=[
+['Pad Kra Pow','ผัดกะเพรา',2,[['Pork mince',300,'g','meat'],['Holy basil',1,'bunch','veg'],['Garlic',5,'pcs','veg'],["Bird's eye chilies",6,'pcs','veg'],['Eggs',2,'pcs','dairy'],['Oyster sauce',2,'tbsp','pantry'],['Jasmine rice',300,'g','pantry']]],
+['Beef Short Ribs','ซี่โครงวัวตุ๋น',4,[['Beef short ribs',1.5,'kg','meat'],['Onion',2,'pcs','veg'],['Garlic',6,'pcs','veg'],['Carrots',3,'pcs','veg'],['Soy sauce',60,'ml','pantry'],['Brown sugar',2,'tbsp','pantry']]],
+['Beef Bulgogi','บูลโกกิ',4,[['Beef sirloin',600,'g','meat'],['Asian pear',1,'pcs','veg'],['Spring onion',1,'bunch','veg'],['Garlic',4,'pcs','veg'],['Soy sauce',80,'ml','pantry'],['Sesame oil',2,'tbsp','pantry'],['Sesame seeds',1,'tbsp','pantry']]],
+['Tom Yum Goong','ต้มยำกุ้ง',4,[['Prawns',500,'g','meat'],['Mushrooms',200,'g','veg'],['Lemongrass',3,'pcs','veg'],['Galangal',50,'g','veg'],['Kaffir lime leaves',6,'pcs','veg'],['Lime',3,'pcs','veg'],['Chili paste',2,'tbsp','pantry']]],
+['Green Curry','แกงเขียวหวาน',4,[['Chicken thigh',500,'g','meat'],['Green curry paste',60,'g','pantry'],['Coconut milk',400,'ml','dairy'],['Thai eggplant',200,'g','veg'],['Thai basil',1,'bunch','veg']]],
+['Khao Man Gai','ข้าวมันไก่',4,[['Whole chicken',1.2,'kg','meat'],['Jasmine rice',400,'g','pantry'],['Ginger',50,'g','veg'],['Cucumber',1,'pcs','veg'],['Soybean paste',2,'tbsp','pantry']]],
+['Pad Thai','ผัดไทย',2,[['Rice noodles',200,'g','pantry'],['Prawns',200,'g','meat'],['Eggs',2,'pcs','dairy'],['Bean sprouts',100,'g','veg'],['Firm tofu',100,'g','dairy'],['Tamarind paste',2,'tbsp','pantry'],['Peanuts',50,'g','pantry']]],
+['Omelette Rice','ข้าวไข่เจียว',2,[['Eggs',4,'pcs','dairy'],['Jasmine rice',300,'g','pantry'],['Spring onion',1,'bunch','veg'],['Fish sauce',1,'tbsp','pantry']]],
+['Som Tum','ส้มตำ',2,[['Green papaya',1,'pcs','veg'],['Tomatoes',2,'pcs','veg'],['Long beans',100,'g','veg'],['Lime',2,'pcs','veg'],['Peanuts',30,'g','pantry'],['Dried shrimp',20,'g','pantry']]],
+['Massaman Curry','แกงมัสมั่น',4,[['Beef chuck',600,'g','meat'],['Potatoes',3,'pcs','veg'],['Onion',1,'pcs','veg'],['Massaman paste',60,'g','pantry'],['Coconut milk',400,'ml','dairy'],['Peanuts',50,'g','pantry']]],
+['Spaghetti Bolognese','',4,[['Beef mince',500,'g','meat'],['Canned tomatoes',400,'g','pantry'],['Onion',1,'pcs','veg'],['Garlic',3,'pcs','veg'],['Spaghetti',400,'g','pantry'],['Parmesan',50,'g','dairy']]],
+['Chicken Teriyaki Bowl','',2,[['Chicken thigh',400,'g','meat'],['Soy sauce',60,'ml','pantry'],['Mirin',2,'tbsp','pantry'],['Jasmine rice',300,'g','pantry'],['Broccoli',200,'g','veg']]],
+['Kimchi Fried Rice','',2,[['Kimchi',200,'g','veg'],['Jasmine rice',300,'g','pantry'],['Eggs',2,'pcs','dairy'],['Spring onion',1,'bunch','veg'],['Pork belly',150,'g','meat']]],
+['Moo Ping','หมูปิ้ง',4,[['Pork shoulder',800,'g','meat'],['Coconut milk',100,'ml','dairy'],['Garlic',6,'pcs','veg'],['Coriander root',3,'pcs','veg'],['Palm sugar',2,'tbsp','pantry']]],
+['Larb Moo','ลาบหมู',2,[['Pork mince',300,'g','meat'],['Shallots',4,'pcs','veg'],['Mint',1,'bunch','veg'],['Toasted rice powder',2,'tbsp','pantry'],['Lime',2,'pcs','veg'],['Fish sauce',2,'tbsp','pantry']]],
+['Pancakes','',2,[['Flour',200,'g','pantry'],['Milk',300,'ml','dairy'],['Eggs',2,'pcs','dairy'],['Butter',50,'g','dairy'],['Maple syrup',50,'ml','pantry']]],
+['Caesar Salad','',2,[['Romaine lettuce',1,'pcs','veg'],['Chicken breast',300,'g','meat'],['Parmesan',40,'g','dairy'],['Bread',100,'g','pantry'],['Eggs',1,'pcs','dairy']]],
+['Tom Kha Gai','ต้มข่าไก่',4,[['Chicken thigh',400,'g','meat'],['Coconut milk',400,'ml','dairy'],['Galangal',50,'g','veg'],['Mushrooms',150,'g','veg'],['Lemongrass',2,'pcs','veg'],['Lime',2,'pcs','veg']]],
+['Gyudon','',2,[['Beef slices',300,'g','meat'],['Onion',1,'pcs','veg'],['Soy sauce',40,'ml','pantry'],['Mirin',2,'tbsp','pantry'],['Jasmine rice',300,'g','pantry'],['Eggs',2,'pcs','dairy']]],
+['Pad See Ew','ผัดซีอิ๊ว',2,[['Wide rice noodles',300,'g','pantry'],['Chinese broccoli',200,'g','veg'],['Pork loin',200,'g','meat'],['Eggs',2,'pcs','dairy'],['Dark soy sauce',2,'tbsp','pantry']]]
+];
+function seed(){
+  const now=Date.now(),ws=weekStart(now),lw=ws-7*DAY;
+  const users=[{id:'u1',name:'Jina',email:'jina@home.app',tone:'lavender'},{id:'u2',name:'Ham',email:'ham@home.app',tone:'sage'}];
+  const menus=MENUS.map((m,i)=>({id:'m'+(i+1),name:m[0],nameTh:m[1],portions:m[2],photo:null,ingredients:m[3].map(x=>({name:x[0],qty:x[1],unit:x[2],categoryId:x[3]})),createdBy:i%2?'u2':'u1'}));
+  const it=(o)=>Object.assign({id:uid(),qtyBought:0,price:null,boughtBy:null,boughtAt:null,source:'manual',menuId:null,weekStart:ws,rolled:false,createdAt:now-3600e3},o);
+  const items=[
+    it({name:'Tissue paper',categoryId:'house',qtyNeeded:5,unit:'pack',addedBy:'u2',source:'stock',qtyBought:3,boughtBy:'u1',boughtAt:now-2*3600e3,price:189,createdAt:now-DAY}),
+    it({name:'Dish soap',categoryId:'house',qtyNeeded:1,unit:'pcs',addedBy:'u2',source:'stock',createdAt:now-DAY+600e3}),
+    it({name:'Milk',categoryId:'dairy',qtyNeeded:2,unit:'L',addedBy:'u1',createdAt:now-5*3600e3}),
+    it({name:'Eggs',categoryId:'dairy',qtyNeeded:10,unit:'pcs',addedBy:'u1',qtyBought:10,boughtBy:'u1',boughtAt:now-2*3600e3,price:65}),
+    it({name:'Mangoes',categoryId:'veg',qtyNeeded:4,unit:'pcs',addedBy:'u2',rolled:true,createdAt:lw+2*DAY}),
+    it({name:'Laundry detergent',categoryId:'house',qtyNeeded:1,unit:'pcs',addedBy:'u1',rolled:true,createdAt:lw+3*DAY}),
+    it({name:'Pork belly',categoryId:'meat',qtyNeeded:1,unit:'kg',addedBy:'u2',qtyBought:1,boughtBy:'u2',boughtAt:lw+5*DAY,price:260,weekStart:lw,createdAt:lw+DAY}),
+    it({name:'Jasmine rice 5kg',categoryId:'pantry',qtyNeeded:1,unit:'pack',addedBy:'u1',qtyBought:1,boughtBy:'u2',boughtAt:lw+5*DAY,price:215,weekStart:lw,createdAt:lw+DAY}),
+    it({name:'Cabbage',categoryId:'veg',qtyNeeded:1,unit:'pcs',addedBy:'u1',qtyBought:1,boughtBy:'u1',boughtAt:lw+6*DAY,price:35,weekStart:lw,createdAt:lw+DAY}),
+    it({name:'Yoghurt',categoryId:'dairy',qtyNeeded:4,unit:'pcs',addedBy:'u2',qtyBought:4,boughtBy:'u1',boughtAt:lw+6*DAY,price:96,weekStart:lw,createdAt:lw+DAY}),
+    it({name:'Toothpaste',categoryId:'house',qtyNeeded:2,unit:'pcs',addedBy:'u2',qtyBought:2,boughtBy:'u2',boughtAt:lw+2*DAY,price:118,weekStart:lw,createdAt:lw})
+  ];
+  const stock=[{id:uid(),name:'Tissue paper',categoryId:'house',qty:5,unit:'pack',addedBy:'u2',listItemId:items[0].id,createdAt:now-DAY},{id:uid(),name:'Dish soap',categoryId:'house',qty:1,unit:'pcs',addedBy:'u2',listItemId:items[1].id,createdAt:now-DAY+600e3}];
+  const notifs=[
+    {id:uid(),who:'u1',text:'Jina bought 3 of 5 tissue paper. 2 still to buy.',at:now-2*3600e3,read:false},
+    {id:uid(),who:'u1',text:'Jina bought 10 eggs for ฿65.',at:now-2*3600e3-60e3,read:false},
+    {id:uid(),who:'u1',text:'Jina added 2 L milk to the list.',at:now-5*3600e3,read:true},
+    {id:uid(),who:'u2',text:'Ham marked dish soap and tissue paper out of stock.',at:now-DAY,read:true},
+    {id:uid(),who:'u2',text:'2 things rolled over from last week: mangoes, laundry detergent.',at:ws,read:true}
+  ];
+  const data={users,households:[{id:'h1',name:"Jina & Ham's place",budgetMonthly:16000,members:['u1','u2'],invites:[],categories:CATS.slice()}],menus,items,stock,weekPlans:{},notifs};
+  const s={data};
+  s.data.weekPlans[ws]=[];
+  return s;
+}
+class Component extends DCLogic {
+  constructor(p){super(p);
+    let data=null;try{data=JSON.parse(localStorage.getItem(LS));}catch(e){}
+    if(!data||!data.menus)data=seed().data;
+    if(data.household&&!data.households){data=Object.assign({},data,{households:[Object.assign({},data.household,{invites:(data.household.invites||[]).map(e=>typeof e==='string'?{email:e,by:null,at:Date.now(),status:'pending'}:e)})]});delete data.household;}
+    data=Object.assign({},data,{menus:data.menus.map(m=>Object.assign({},m,{ingredients:m.ingredients.map(i=>Object.assign({},i,{staple:isStaple(i)}))}))});
+    let session=null;try{session=localStorage.getItem(SS);}catch(e){}
+    if(this.props.startSignedOut)session=null;
+    this.photoRef=React.createRef();
+    this.state={data,session,tab:'home',listMode:'shop',spendMode:'week',search:'',filter:'all',menuLimit:8,sheet:null,sheetId:null,wide:typeof window!=='undefined'&&window.innerWidth>=820,
+      auth:{mode:'in',name:'',email:'',pass:'',house:'',error:''},form:{name:'',qty:'1',unit:'pcs',cat:'veg'},buy:{qty:0,price:''},md:{portions:1},nm:{editId:null,name:'',portions:2,photo:null,rows:[{name:'',qty:'',unit:'g',cat:'veg',staple:false}]},ptr:{h:0,drag:false,busy:false},push:(typeof Notification!=='undefined'?Notification.permission:'unsupported'),prefs:(()=>{try{return Object.assign({added:true,bought:true,recap:true},JSON.parse(localStorage.getItem('restock.prefs')||'{}'));}catch(e){return{added:true,bought:true,recap:true};}})(),inviteEmail:'',newCat:'',budgetDraft:'',houseDraft:'',newHouseName:'',recapWeek:null,booting:true};
+    const h0=this.house(data,session);if(h0){this.state.budgetDraft=String(h0.budgetMonthly);this.state.houseDraft=h0.name;}
+    this.state.data=this.rollover(this.state.data);
+    if(!session){const w=this.applyWeekPlanSeed(this.state.data);this.state.data=w;}
+  }
+  applyWeekPlanSeed(data){const ws=weekStart(Date.now());if(data.weekPlans[ws]&&data.weekPlans[ws].length)return data;if(data._seededWeek)return data;data._seededWeek=true;let d=data;d=this.addMenuToWeek(d,'m1',2,'u1',true);d=this.addMenuToWeek(d,'m3',4,'u2',true);return d;}
+  componentDidMount(){this._rs=()=>this.setState({wide:window.innerWidth>=820});window.addEventListener('resize',this._rs);
+    if('serviceWorker' in navigator){try{navigator.serviceWorker.register('sw.js').catch(()=>{});}catch(e){}}
+    const d=new Date();if(this.props.showRecap||(d.getDay()===0&&d.getHours()>=20&&!sessionStorage.getItem('restock.recapShown'))){try{sessionStorage.setItem('restock.recapShown','1');}catch(e){}if(this.state.session)this.setState({sheet:'recap',recapWeek:weekStart(Date.now())});}
+    if(!this.state.session&&this.state.data._seededWeek)this.persist(this.state.data);
+    this.boot();}
+  async boot(){const wait=async(f,ms)=>{const t=Date.now();while(!f()&&Date.now()-t<ms)await new Promise(r=>setTimeout(r,50));return f();};
+    await wait(()=>window.STOCKLY_CONFIG!==undefined,2500);const C=window.STOCKLY_CONFIG||{};
+    if(!(C.supabaseUrl&&C.supabaseAnonKey)){this.setState({booting:false});return;}
+    const ok=await wait(()=>window.StocklyBackend&&window.supabase,10000);
+    if(!ok){this.setState({booting:false,session:null,data:EMPTY(),auth:Object.assign({},this.state.auth,{error:'Could not reach the server. Check your connection and pull down to retry.'})});return;}
+    this.B=window.StocklyBackend;
+    try{await this.B.waitReady();this.B.onRemoteChange(d=>this.setState({data:d}));
+      const id=await this.B.getSession();
+      if(!id){this.setState({booting:false,session:null,data:EMPTY()});return;}
+      const data=await this.B.load(id);this.setState({data,booting:false},()=>this.enter(id));
+    }catch(e){console.error(e);this.setState({booting:false,session:null,data:EMPTY(),auth:Object.assign({},this.state.auth,{error:'Something went wrong loading your house: '+(e.message||e)})});}}
+  signOut(){if(this.B){this.B.signOut();this.setState({session:null,data:EMPTY(),sheet:null,tab:'home',auth:{mode:'in',name:'',email:'',pass:'',house:'',error:''}});return;}
+    try{localStorage.removeItem(SS);}catch(e){}this.setState({session:null,auth:{mode:'in',name:'',email:'',pass:'',house:'',error:''}});}
+  componentDidUpdate(pp,ps){if(ps.data!==this.state.data)this.persist(this.state.data);if(pp.showRecap!==this.props.showRecap&&this.props.showRecap)this.setState({sheet:'recap',recapWeek:weekStart(Date.now())});}
+  componentWillUnmount(){window.removeEventListener('resize',this._rs);}
+  persist(d){if(this.B){this.B.save(d);return;}try{localStorage.setItem(LS,JSON.stringify(d));}catch(e){}}
+  rollover(data){const ws=weekStart(Date.now());let moved=[];const items=data.items.map(i=>{if(i.weekStart<ws&&i.qtyBought<i.qtyNeeded){moved.push(i.name);return Object.assign({},i,{weekStart:ws,rolled:true});}return i;});if(!moved.length)return data;const notifs=[{id:uid(),who:null,text:moved.length+' things rolled over from last week: '+moved.join(', ')+'.',at:Date.now(),read:false}].concat(data.notifs);const wp=Object.assign({},data.weekPlans);if(!wp[ws])wp[ws]=[];return Object.assign({},data,{items,notifs,weekPlans:wp});}
+  upd(fn){this.setState(s=>{const data=fn(s.data);this.persist(data);return{data};});}
+  setState(u,cb){super.setState(u,()=>{if(u&&typeof u==='object'&&u.data)this.persist(u.data);if(cb)cb();});}
+  me(){const s=this.state;return s.data.users.find(u=>u.id===s.session)||s.data.users[0]||{id:'_',name:'',email:'',tone:'lavender'};}
+  user(id){return this.state.data.users.find(u=>u.id===id)||{name:'Someone',tone:'dusk'};}
+  house(data,userId){return (data.households||[]).find(h=>h.members.includes(userId))||null;}
+  patchHouse(data,fn){const me=this.me();return Object.assign({},data,{households:data.households.map(h=>h.members.includes(me.id)?fn(h):h)});}
+  pendingFor(data,user){const out=[];(data.households||[]).forEach(h=>(h.invites||[]).forEach(i=>{if(i.status==='pending'&&i.email===user.email&&!h.members.includes(user.id))out.push({house:h,invite:i});}));return out;}
+  cat(id){const hh=this.house(this.state.data,this.me().id);return (hh?hh.categories:CATS).find(c=>c.id===id)||{id,name:'Other',icon:'shopping-basket',tone:'dusk'};}
+  notify(data,text,who,kind){const k=kind||(/bought|got /i.test(text)?'bought':/rolled over|recap/i.test(text)?'recap':'added');if(!this.B)this.devicePush('Stockly',text,k);return Object.assign({},data,{notifs:[{id:uid(),who,text,at:Date.now(),read:who===this.me().id,kind:kind||undefined}].concat(data.notifs).slice(0,60)});}
+  devicePush(title,body,kind){const s=this.state;if(!s||s.push!=='granted')return;if(kind&&s.prefs&&s.prefs[kind]===false)return;const opts={body,icon:'icons/stockly-512.png',badge:'icons/stockly-512.png',tag:'restock-'+Date.now()};
+    try{if(navigator.serviceWorker&&navigator.serviceWorker.ready){navigator.serviceWorker.ready.then(r=>r.showNotification(title,opts)).catch(()=>{try{new Notification(title,opts);}catch(e){}});}else new Notification(title,opts);}catch(e){}}
+  enablePush(){if(typeof Notification==='undefined')return this.setState({push:'unsupported'});Notification.requestPermission().then(p=>{this.setState({push:p});if(p==='granted'){if(this.B)this.B.subscribePush(this.state.prefs).catch(e=>console.warn('push subscribe failed',e));setTimeout(()=>this.devicePush('Stockly','Notifications are on. We\'ll ping you when the list changes.'),300);}});}
+  setPref(k){return v=>this.setState(s=>{const prefs=Object.assign({},s.prefs,{[k]:v});try{localStorage.setItem('restock.prefs',JSON.stringify(prefs));}catch(e){}if(this.B)this.B.updatePushPrefs(prefs).catch(()=>{});return{prefs};});}
+  addMenuToWeek(data,menuId,portions,by,silent){const ws=weekStart(Date.now());const menu=data.menus.find(m=>m.id===menuId);if(!menu)return data;const wp=Object.assign({},data.weekPlans);const plan=(wp[ws]||[]).filter(e=>e.menuId!==menuId);plan.push({menuId,portions});wp[ws]=plan;
+    let items=data.items.filter(i=>!(i.source==='menu'&&i.menuId===menuId&&i.weekStart===ws&&i.qtyBought===0));
+    const scale=portions/menu.portions;
+    menu.ingredients.filter(ing=>!ing.staple).forEach(ing=>{const q=ing.qty?Math.round(ing.qty*scale*10)/10:1;const key=ing.name.toLowerCase();const ex=items.find(i=>i.weekStart===ws&&i.name.toLowerCase()===key&&i.unit===ing.unit&&i.qtyBought<i.qtyNeeded);
+      if(ex){items=items.map(i=>i===ex?Object.assign({},i,{qtyNeeded:Math.round((i.qtyNeeded+q)*10)/10}):i);}else items.push({id:uid(),name:ing.name,categoryId:ing.categoryId,qtyNeeded:q,unit:ing.unit,qtyBought:0,price:null,addedBy:by,boughtBy:null,boughtAt:null,source:'menu',menuId,weekStart:ws,rolled:false,createdAt:Date.now()});});
+    let d=Object.assign({},data,{weekPlans:wp,items});if(!silent)d=this.notify(d,this.user(by).name+' planned '+menu.name+' for '+portions+' and added its ingredients to the list.',by);return d;}
+  removeMenuFromWeek(data,menuId,by){const ws=weekStart(Date.now());const menu=data.menus.find(m=>m.id===menuId);const wp=Object.assign({},data.weekPlans);wp[ws]=(wp[ws]||[]).filter(e=>e.menuId!==menuId);const items=data.items.filter(i=>!(i.source==='menu'&&i.menuId===menuId&&i.weekStart===ws&&i.qtyBought===0));let d=Object.assign({},data,{weekPlans:wp,items});return this.notify(d,this.user(by).name+' took '+menu.name+' off this week.',by);}
+  setForm(k){return v=>this.setState(s=>({form:Object.assign({},s.form,{[k]:v})}));}
+  setAuth(k){return v=>this.setState(s=>({auth:Object.assign({},s.auth,{[k]:v,error:''})}));}
+  renderVals(){
+    const s=this.state,me=this.me(),ws=weekStart(Date.now()),ms=monthStart(Date.now());
+    const myHouse=this.house(s.data,me.id);const d=Object.assign({},s.data,{household:myHouse||{id:null,name:'',budgetMonthly:0,members:[],invites:[],categories:CATS}});
+    const signedIn=!s.booting&&!!s.session&&!!myHouse;const needsHouse=!s.booting&&!!s.session&&!myHouse;
+    const pending=this.pendingFor(s.data,me);const pendingView=pending.map(p=>({name:p.house.name,by:p.invite.by?this.user(p.invite.by).name:'Someone',count:p.house.members.length,join:()=>this.joinHouse(p.house.id),decline:()=>this.declineInvite(p.house.id)}));
+    const cats=d.household.categories;
+    const catOptions=cats.map(c=>({value:c.id,label:c.name}));
+    const weekItems=d.items.filter(i=>i.weekStart===ws);
+    const left=weekItems.filter(i=>i.qtyBought<i.qtyNeeded);
+    const bought=weekItems.filter(i=>i.qtyBought>0);
+    const weekBudget=Math.round(d.household.budgetMonthly*12/52);
+    const weekSpent=d.items.filter(i=>i.boughtAt&&i.boughtAt>=ws&&i.price).reduce((a,i)=>a+Number(i.price),0);
+    const monthSpent=d.items.filter(i=>i.boughtAt&&i.boughtAt>=ms&&i.price).reduce((a,i)=>a+Number(i.price),0);
+    const plan=d.weekPlans[ws]||[];
+    const openMenu=id=>()=>{const e=plan.find(p=>p.menuId===id);const m=d.menus.find(x=>x.id===id);this.setState({sheet:'menu',sheetId:id,md:{portions:e?e.portions:m.portions}});};
+    const menuView=(m,i)=>{const e=plan.find(p=>p.menuId===m.id);const tone=TONES[(m.name.charCodeAt(0)+i)%5];return{id:m.id,name:m.name,sub:(m.nameTh?m.nameTh+' · ':'')+m.ingredients.length+' ingredients',tint:TINT[tone],initial:m.name[0],hasPhoto:!!m.photo,noPhoto:!m.photo,photo:m.photo,inWeek:!!e,portions:e?e.portions:m.portions,ingCount:m.ingredients.length,open:openMenu(m.id),remove:()=>this.upd(x=>this.removeMenuFromWeek(x,m.id,me.id))};};
+    const q=s.search.trim().toLowerCase();
+    let filtered=d.menus.filter(m=>!q||m.name.toLowerCase().includes(q)||(m.nameTh||'').includes(s.search.trim())||m.ingredients.some(x=>x.name.toLowerCase().includes(q)));
+    if(s.filter==='week')filtered=filtered.filter(m=>plan.some(p=>p.menuId===m.id));
+    if(s.filter==='mine')filtered=filtered.filter(m=>m.createdBy===me.id);
+    const visibleMenus=filtered.slice(0,s.menuLimit).map(menuView);
+    const weekMenus=plan.map(p=>d.menus.find(m=>m.id===p.menuId)).filter(Boolean).map(menuView);
+    const sw=s.swipe||{};const groupsMap={};left.concat(bought.filter(i=>i.qtyBought>=i.qtyNeeded)).forEach(i=>{(groupsMap[i.categoryId]=groupsMap[i.categoryId]||[]).push(i);});
+    const groups=cats.concat(Object.keys(groupsMap).filter(k=>!cats.some(c=>c.id===k)).map(k=>this.cat(k))).filter(c=>groupsMap[c.id]).map(c=>{const arr=groupsMap[c.id].slice().sort((a,b)=>(a.qtyBought>=a.qtyNeeded)-(b.qtyBought>=b.qtyNeeded)||a.createdAt-b.createdAt);return{name:c.name,icon:c.icon,bg:TINT[c.tone],count:arr.filter(i=>i.qtyBought<i.qtyNeeded).length+' left',items:arr.map(i=>{const rem=i.qtyNeeded-i.qtyBought;const done=rem<=0;const by=this.user(i.addedBy);return{name:i.name,qtyLabel:done?fmtQ(i.qtyNeeded)+' '+i.unit:(i.qtyBought>0?fmtQ(rem)+' '+i.unit+' left of '+fmtQ(i.qtyNeeded):fmtQ(i.qtyNeeded)+' '+i.unit),price:i.price?Number(i.price):undefined,note:done?('Bought by '+this.user(i.boughtBy).name):(i.rolled?'Rolled over':i.source==='menu'?'From menu':i.source==='stock'?'Out at home':undefined),checked:done,addedBy:by.name,tone:by.tone,toggle:()=>this.openBuy(i.id),open:()=>this.openBuy(i.id),x:sw.id===i.id?sw.x:0,transition:sw.id===i.id&&sw.dragging?'none':'transform .32s cubic-bezier(.2,.8,.2,1)',delOpacity:sw.id===i.id&&sw.x<-10?1:0,remove:()=>this.removeItem(i.id),pd:e=>this.swipeStart(e,i.id),pm:e=>this.swipeMove(e,i.id),pu:e=>this.swipeEnd(e,i.id)};})};});
+    const nav=[['home','Home','house'],['menus','Menus','book-open'],['list','List','list-checks'],['spend','Spending','wallet'],['house','Household','users']];
+    const titles={home:'Hey '+me.name,menus:'Menus',list:'This week\'s list',spend:'Spending',house:d.household.name};
+    const eyebrows={home:'WEEK OF '+this.weekLabel(ws),menus:d.menus.length+' MENUS',list:left.length+' LEFT · '+this.weekLabel(ws),spend:s.spendMode==='week'?'THIS WEEK':'THIS MONTH',house:'HOUSEHOLD'};
+    const unread=d.notifs.filter(n=>!n.read).length;
+    const notifView=n=>({who:n.who?this.user(n.who).name:'stockly',tone:n.who?this.user(n.who).tone:'tangerine',text:n.text,when:ago(n.at),unread:!n.read});
+    // spending
+    const periodStart=s.spendMode==='week'?ws:ms;
+    const boughtP=d.items.filter(i=>i.boughtAt&&i.boughtAt>=periodStart).sort((a,b)=>b.boughtAt-a.boughtAt);
+    const spendTotal=s.spendMode==='week'?weekSpent:monthSpent;const spendBudget=s.spendMode==='week'?weekBudget:d.household.budgetMonthly;
+    const over=spendTotal-spendBudget;
+    const catSpend=cats.map(c=>({name:c.name,icon:c.icon,tone:c.tone,spent:boughtP.filter(i=>i.categoryId===c.id&&i.price).reduce((a,i)=>a+Number(i.price),0),budget:Math.round(spendBudget/cats.length)}));
+    const boughtRows=boughtP.map(i=>{const u=this.user(i.boughtBy);return{name:i.name,who:u.name,tone:u.tone,sub:fmtQ(i.qtyBought)+' '+i.unit+' · '+u.name+' · '+ago(i.boughtAt),priceLabel:i.price?fmt(i.price):'Add price',priceColor:i.price?'#26243D':'#F1642E',open:()=>this.openBuy(i.id)};});
+    // buy sheet
+    const bi=d.items.find(i=>i.id===s.sheetId)||null;const brem=bi?bi.qtyNeeded-bi.qtyBought:0;const bcat=bi?this.cat(bi.categoryId):{};
+    // menu detail
+    const mdm=s.sheet==='menu'?d.menus.find(m=>m.id===s.sheetId):null;const mdTone=mdm?TONES[(mdm.name.charCodeAt(0)+d.menus.indexOf(mdm))%5]:'sage';const mdPlan=mdm?plan.find(p=>p.menuId===mdm.id):null;
+    const ingView=i=>{const c=this.cat(i.categoryId);const onList=d.items.some(x=>x.weekStart===ws&&x.name.toLowerCase()===i.name.toLowerCase()&&x.qtyBought<x.qtyNeeded);return{name:i.name,icon:c.icon,bg:TINT[c.tone],qtyLabel:i.qty?fmtQ(Math.round(i.qty*s.md.portions/mdm.portions*10)/10)+' '+i.unit:'to taste',onList,notOnList:!onList,addOut:()=>this.addStapleToList(i)};};
+    const mdIng=mdm?mdm.ingredients.filter(i=>!i.staple).map(ingView):[];const mdStaples=mdm?mdm.ingredients.filter(i=>i.staple).map(ingView):[];
+    // recap
+    const rw=s.recapWeek||ws;const rItems=d.items.filter(i=>i.boughtAt&&i.boughtAt>=rw&&i.boughtAt<rw+7*DAY);const rTotal=rItems.reduce((a,i)=>a+Number(i.price||0),0);const rLeft=d.items.filter(i=>i.weekStart>=rw&&i.qtyBought<i.qtyNeeded);
+    const nmTone='apricot';
+    return {
+      booting:!!s.booting,isDemo:!this.B,authHint:this.B?'':'Demo accounts: jina@home.app or ham@home.app, any password.',signedOut:!s.booting&&!s.session,signedIn,needsHouse,pendingInvites:pendingView,hasPending:pendingView.length>0,noPending:pendingView.length===0,newHouseName:s.newHouseName,setNewHouseName:v=>this.setState({newHouseName:v}),createHouse:()=>this.createHouse(),
+      sheetInvite:s.sheet==='invite',createHouseTitle:pendingView.length?'Or start your own':'Start a household',invitePrompt:pendingView[0]||{name:'',by:'',count:0},isWide:s.wide,isNarrow:!s.wide,contentMax:s.wide?'860px':'640px',
+      authTitle:s.auth.mode==='in'?'Welcome back':'Set up your house',authModes:[{value:'in',label:'Sign in'},{value:'up',label:'Create account'}],authMode:s.auth.mode,setAuthMode:v=>this.setState(x=>({auth:Object.assign({},x.auth,{mode:v,error:''})})),isSignUp:s.auth.mode==='up',authName:s.auth.name,setAuthName:this.setAuth('name'),authEmail:s.auth.email,setAuthEmail:this.setAuth('email'),authPass:s.auth.pass,setAuthPass:this.setAuth('pass'),authHouse:s.auth.house,setAuthHouse:this.setAuth('house'),authError:s.auth.error||undefined,authCta:s.auth.busy?'One moment…':s.auth.mode==='in'?'Sign in':'Create account',submitAuth:()=>this.submitAuth(),
+      navItems:nav.map(n=>({label:n[1],icon:n[2],go:()=>this.setState({tab:n[0]}),color:s.tab===n[0]?'#FFFDF6':'#3A3858',bg:s.tab===n[0]?'#504E76':'transparent'})),
+      tabItems:nav.map(n=>({id:n[0],label:n[1],icon:n[2],badge:n[0]==='list'&&left.length>0})),tab:s.tab,setTab:v=>this.setState({tab:v}),
+      tabHome:s.tab==='home',tabMenus:s.tab==='menus',tabList:s.tab==='list',tabSpend:s.tab==='spend',tabHouse:s.tab==='house',
+      goList:()=>this.setState({tab:'list',listMode:'shop'}),goMenus:()=>this.setState({tab:'menus'}),goHouse:()=>this.setState({tab:'house'}),
+      pageTitle:titles[s.tab],eyebrow:eyebrows[s.tab],meName:me.name,meTone:me.tone,hasUnread:unread>0,openNotifs:()=>{this.setState({sheet:'notifs'});this.upd(x=>Object.assign({},x,{notifs:x.notifs.map(n=>Object.assign({},n,{read:true}))}));},
+      ptrHeight:s.ptr.h,ptrTransition:s.ptr.drag?'none':'height .32s cubic-bezier(.2,.8,.2,1)',ptrOpacity:Math.min(1,s.ptr.h/50),ptrRotate:Math.round(s.ptr.h*3),ptrAnim:s.ptr.busy?'rs-spin .8s linear infinite':'none',ptrLabel:s.ptr.busy?'Refreshing…':s.ptr.h>=70?'Let go to refresh':'Pull to refresh',
+      ptrStart:e=>{const el=e.currentTarget;this._ptr=el.scrollTop<=0&&!s.ptr.busy?{y:e.touches[0].clientY,on:true}:null;},
+      ptrMove:e=>{const p=this._ptr;if(!p||!p.on)return;const dy=e.touches[0].clientY-p.y;if(dy<=0||e.currentTarget.scrollTop>0){if(this.state.ptr.h)this.setState({ptr:{h:0,drag:false,busy:false}});return;}this.setState({ptr:{h:Math.min(120,dy*0.5),drag:true,busy:false}});},
+      ptrEnd:()=>{const p=this._ptr;this._ptr=null;if(!p)return;if(this.state.ptr.h>=70)this.refresh();else this.setState({ptr:{h:0,drag:false,busy:false}});},
+      onMainScroll:e=>{const el=e.currentTarget;if(s.tab==='menus'&&el.scrollTop+el.clientHeight>el.scrollHeight-400&&s.menuLimit<filtered.length)this.setState({menuLimit:s.menuLimit+8});},
+      n0:0,n1:1,n8:8,n6:6,n10:10,n20:20,n24:24,n28:28,n32:32,n40:40,n44:44,n56:56,n84:84,n96:96,
+      weekLabel:this.weekLabel(ws),weekSpent,weekBudget,weekSpentFmt:fmt(weekSpent),weekBudgetFmt:fmt(weekBudget),underBudget:weekSpent>0&&weekSpent<weekBudget,underAmt:fmt(weekBudget-weekSpent),leftCount:left.length,boughtCount:bought.filter(i=>i.qtyBought>=i.qtyNeeded).length,weekMenuCount:plan.length,
+      weekMenus,noWeekMenus:plan.length===0,hasWeekMenus:plan.length>0,recentNotifs:d.notifs.slice(0,4).map(notifView),allNotifs:d.notifs.map(notifView),
+      hasRolled:weekItems.some(i=>i.rolled&&i.qtyBought<i.qtyNeeded),rolledCount:weekItems.filter(i=>i.rolled&&i.qtyBought<i.qtyNeeded).length,openRecap:()=>this.setState({sheet:'recap',recapWeek:s.tab==='home'?ws-7*DAY:ws}),
+      search:s.search,setSearch:v=>this.setState({search:v,menuLimit:8}),openAddMenu:()=>this.setState({sheet:'addMenu',nm:{editId:null,name:'',portions:2,photo:null,rows:[{name:'',qty:'',unit:'g',cat:'veg',staple:false},{name:'',qty:'',unit:'g',cat:'veg',staple:false}]}}),nmTitle:s.nm.editId?'Edit menu':'New menu',nmCta:s.nm.editId?'Save changes':'Save menu',
+      menuFilters:[['all','All menus','dusk'],['week','This week','sage'],['mine','Added by me','lavender']].map(f=>({label:f[1],tone:f[2],selected:s.filter===f[0],set:()=>this.setState({filter:f[0],menuLimit:8})})),
+      menuCountLabel:filtered.length===d.menus.length?'Showing '+Math.min(s.menuLimit,filtered.length)+' of '+filtered.length:filtered.length+' match'+(filtered.length===1?'':'es'),
+      visibleMenus,moreMenus:filtered.length>s.menuLimit,loadMoreMenus:()=>this.setState({menuLimit:s.menuLimit+8}),noMenus:filtered.length===0,
+      listModes:[{value:'shop',label:'Shopping list'},{value:'stock',label:'Out at home'}],listMode:s.listMode,setListMode:v=>this.setState({listMode:v}),listShopping:s.listMode==='shop',listStock:s.listMode==='stock',
+      emptyList:weekItems.length===0,groups,
+      stockItems:d.stock.slice().sort((a,b)=>b.createdAt-a.createdAt).map(st=>{const li=d.items.find(i=>i.id===st.listItemId);const c=this.cat(st.categoryId);const rem=li?li.qtyNeeded-li.qtyBought:0;const done=li&&rem<=0;return{name:st.name,icon:c.icon,bg:TINT[c.tone],border:done?'#A3B565':'transparent',status:'Need '+fmtQ(st.qty)+' '+st.unit+' · '+this.user(st.addedBy).name,tag:done?'Restocked':li?(li.qtyBought>0?fmtQ(rem)+' still to buy':'On the list'):'Not on list',tagTone:done?'sage':li&&li.qtyBought>0?'tangerine':'apricot',remove:()=>this.upd(x=>Object.assign({},x,{stock:x.stock.filter(y=>y.id!==st.id)}))};}),
+      noStock:d.stock.length===0,openAddStock:()=>this.setState({sheet:'addStock',form:{name:'',qty:'1',unit:'pcs',cat:'house'}}),openAddItem:()=>this.setState({sheet:'addItem',form:{name:'',qty:'1',unit:'pcs',cat:'veg'}}),
+      sheetAddItem:s.sheet==='addItem',sheetAddStock:s.sheet==='addStock',sheetBuy:s.sheet==='buy',sheetMenu:s.sheet==='menu',sheetAddMenu:s.sheet==='addMenu',sheetNotifs:s.sheet==='notifs',sheetRecap:s.sheet==='recap',closeSheet:()=>this.setState({sheet:null}),
+      fName:s.form.name,setFName:this.setForm('name'),fQty:s.form.qty,setFQty:this.setForm('qty'),fUnit:s.form.unit,setFUnit:this.setForm('unit'),fCat:s.form.cat,setFCat:this.setForm('cat'),unitOptions:UNITS,catOptions,
+      submitAddItem:()=>this.submitAddItem(false),submitAddStock:()=>this.submitAddItem(true),
+      buyTitle:bi?bi.name:'',buyCat:bcat.name||'',buyCatIcon:bcat.icon||'tag',buyCatTone:bcat.tone||'dusk',buyMeta:bi?('Added by '+this.user(bi.addedBy).name+(bi.rolled?' · rolled over':bi.source==='menu'?' · from a menu':'')):'',
+      buyHasRemaining:brem>0,buyDone:bi&&brem<=0,buyNeedLabel:bi?(bi.qtyBought>0?fmtQ(brem)+' '+bi.unit+' still needed':'Need '+fmtQ(bi.qtyNeeded)+' '+bi.unit):'',buyQty:s.buy.qty,setBuyQty:v=>this.setState(x=>({buy:Object.assign({},x.buy,{qty:v})})),buyMax:Math.max(1,Math.ceil(brem)),buyUnit:bi?bi.unit:'',buyPartial:bi&&s.buy.qty>0&&s.buy.qty<brem,buyLeftLabel:bi?fmtQ(Math.max(0,brem-s.buy.qty))+' '+bi.unit:'',
+      buyPrice:s.buy.price,setBuyPrice:v=>this.setState(x=>({buy:Object.assign({},x.buy,{price:v})})),buyAllLabel:bi?'Got all '+fmtQ(brem)+' '+bi.unit:'',buyPartialLabel:bi?'Only got '+fmtQ(s.buy.qty)+' '+bi.unit:'',
+      submitBuyAll:()=>this.submitBuy(brem),submitBuyPartial:()=>this.submitBuy(s.buy.qty),submitPrice:()=>this.submitPrice(),unbuyItem:()=>this.upd(x=>Object.assign({},x,{items:x.items.map(i=>i.id===s.sheetId?Object.assign({},i,{qtyBought:0,boughtBy:null,boughtAt:null,price:null}):i)}))||this.setState({sheet:null}),deleteItem:()=>{this.upd(x=>Object.assign({},x,{items:x.items.filter(i=>i.id!==s.sheetId)}));this.setState({sheet:null});},
+      mdName:mdm?mdm.name:'',mdNameTh:mdm?mdm.nameTh:'',mdHasTh:!!(mdm&&mdm.nameTh),mdTint:TINT[mdTone],mdInitial:mdm?mdm.name[0]:'',mdHasPhoto:!!(mdm&&mdm.photo),mdNoPhoto:!(mdm&&mdm.photo),mdPhoto:mdm?mdm.photo:'',mdPhotoCta:mdm&&mdm.photo?'Change photo':'Add photo',mdBasePortions:mdm?mdm.portions:0,mdPortions:s.md.portions,setMdPortions:v=>this.setState({md:{portions:v}}),mdIngredients:mdIng,mdStaples,mdHasStaples:mdStaples.length>0,editMenu:()=>this.setState({sheet:'addMenu',nm:{editId:mdm.id,name:mdm.name,portions:mdm.portions,photo:mdm.photo,rows:mdm.ingredients.map(i=>({name:i.name,qty:i.qty!=null?String(i.qty):'',unit:i.unit,cat:i.categoryId,staple:!!i.staple}))}}),mdInWeek:!!mdPlan,mdNotInWeek:!mdPlan,
+      addWeekMenu:()=>{this.upd(x=>this.addMenuToWeek(x,mdm.id,s.md.portions,me.id));this.setState({sheet:null,tab:'list',listMode:'shop'});},updateWeekMenu:()=>{this.upd(x=>this.addMenuToWeek(x,mdm.id,s.md.portions,me.id));this.setState({sheet:null});},removeWeekMenu:()=>{this.upd(x=>this.removeMenuFromWeek(x,mdm.id,me.id));this.setState({sheet:null});},deleteMenu:()=>{this.upd(x=>{let y=mdPlan?this.removeMenuFromWeek(x,mdm.id,me.id):x;return Object.assign({},y,{menus:y.menus.filter(m=>m.id!==mdm.id)});});this.setState({sheet:null});},
+      pickMenuPhoto:()=>{if(this.photoRef.current)this.photoRef.current.click();},photoRef:this.photoRef,onPhotoPicked:e=>this.onPhoto(e),
+      nmTint:TINT[nmTone],nmHasPhoto:!!s.nm.photo,nmNoPhoto:!s.nm.photo,nmPhoto:s.nm.photo||'',nmName:s.nm.name,setNmName:v=>this.setState(x=>({nm:Object.assign({},x.nm,{name:v})})),nmPortions:s.nm.portions,setNmPortions:v=>this.setState(x=>({nm:Object.assign({},x.nm,{portions:v})})),
+      nmRows:s.nm.rows.map((r,i)=>{const setR=(k)=>v=>this.setState(x=>({nm:Object.assign({},x.nm,{rows:x.nm.rows.map((rr,j)=>j===i?Object.assign({},rr,{[k]:v}):rr)})}));return{name:r.name,qty:r.qty,unit:r.unit,cat:r.cat,staple:!!r.staple,setStaple:setR('staple'),setName:setR('name'),setQty:setR('qty'),setUnit:setR('unit'),setCat:setR('cat'),remove:()=>this.setState(x=>({nm:Object.assign({},x.nm,{rows:x.nm.rows.filter((_,j)=>j!==i)})}))};}),
+      addNmRow:()=>this.setState(x=>({nm:Object.assign({},x.nm,{rows:x.nm.rows.concat([{name:'',qty:'',unit:'g',cat:'veg',staple:false}])})})),submitNewMenu:()=>this.submitNewMenu(),
+      spendModes:[{value:'week',label:'This week'},{value:'month',label:'This month'}],spendMode:s.spendMode,setSpendMode:v=>this.setState({spendMode:v}),spendGradient:over>0?'peach':'dusk',spendInk:over>0?'#26243D':'#FFFDF6',spendEyebrow:s.spendMode==='week'?'WEEK OF '+this.weekLabel(ws):new Date().toLocaleString('en-US',{month:'long',year:'numeric'}).toUpperCase(),spendTotal,spendBudget,spendTotalFmt:fmt(spendTotal),spendBudgetFmt:fmt(spendBudget),spendBarTone:over>0?'tangerine':'apricot',
+      spendStatus:over>0?fmt(over)+' over — no stress, it happens.':spendTotal===0?'Nothing logged yet.':'You\'re '+fmt(-over)+' under budget. Nice work, team.',catSpend,spendPeriodWord:s.spendMode==='week'?'this week':'this month',boughtRows,noBought:boughtRows.length===0,
+      pushStatus:s.push==='granted'?'On':s.push==='denied'?'Blocked in Settings':s.push==='unsupported'?'Not available here':'Off',pushTone:s.push==='granted'?'sage':s.push==='denied'?'tangerine':'neutral',pushIcon:s.push==='granted'?'bell-ring':'bell-off',
+      pushHelp:s.push==='granted'?'This phone gets a banner when the list changes.':s.push==='denied'?'Notifications were blocked. Allow them in iPhone Settings → Notifications → Stockly.':s.push==='unsupported'?'On iPhone, first add Stockly to your Home Screen from Safari (Share → Add to Home Screen), then open it from there and come back here.':'On iPhone this works once Stockly is added to your Home Screen (iOS 16.4 or newer). Open it from there, then turn this on.',
+      pushCanAsk:s.push==='default',pushOn:s.push==='granted',enablePush:()=>this.enablePush(),testPush:()=>this.devicePush('Stockly',me.name+', this is what a Stockly banner looks like.'),
+      prefAdded:s.prefs.added,setPrefAdded:this.setPref('added'),prefBought:s.prefs.bought,setPrefBought:this.setPref('bought'),prefRecap:s.prefs.recap,setPrefRecap:this.setPref('recap'),
+      memberCount:d.household.members.length,members:d.household.members.map(id=>{const u=this.user(id);return{name:u.name,email:u.email,tone:u.tone,isMe:u.id===me.id,notMe:u.id!==me.id,canActAs:u.id!==me.id&&!this.B,switchTo:()=>this.enter(u.id)};}),
+      inviteEmail:s.inviteEmail,setInviteEmail:v=>this.setState({inviteEmail:v}),sendInvite:()=>{const e=s.inviteEmail.trim().toLowerCase();if(!e.includes('@'))return;if(d.household.members.some(id=>this.user(id).email===e))return;this.upd(x=>this.notify(this.patchHouse(x,hh=>Object.assign({},hh,{invites:(hh.invites||[]).filter(i=>i.email!==e).concat([{email:e,by:me.id,at:Date.now(),status:'pending'}])})),me.name+' invited '+e+' to join '+d.household.name+'. They\'ll be asked before they\'re added.',me.id));this.setState({inviteEmail:''});},
+      hasInvites:d.household.invites.some(i=>i.status!=='accepted'),invites:d.household.invites.filter(i=>i.status!=='accepted').map(i=>({email:i.email,label:i.status==='declined'?'declined':'waiting for them',tone:i.status==='declined'?'neutral':'apricot',cancel:()=>this.upd(x=>this.patchHouse(x,hh=>Object.assign({},hh,{invites:hh.invites.filter(y=>y.email!==i.email)})))})),
+      houseDraft:s.houseDraft,setHouseDraft:v=>this.setState({houseDraft:v}),saveHouseName:()=>{const n=s.houseDraft.trim();if(!n)return;this.upd(x=>this.notify(this.patchHouse(x,hh=>Object.assign({},hh,{name:n})),me.name+' renamed the house to '+n+'.',me.id));},
+      budgetDraft:s.budgetDraft,setBudgetDraft:v=>this.setState({budgetDraft:v}),saveBudget:()=>{const n=Number(s.budgetDraft);if(n>0)this.upd(x=>this.patchHouse(x,hh=>Object.assign({},hh,{budgetMonthly:n})));},
+      catChips:cats.map(c=>({name:c.name,icon:c.icon,tone:c.tone,remove:CATS.some(b=>b.id===c.id)?undefined:()=>this.upd(x=>this.patchHouse(x,hh=>Object.assign({},hh,{categories:hh.categories.filter(y=>y.id!==c.id)})))})),
+      newCat:s.newCat,setNewCat:v=>this.setState({newCat:v}),addCategory:()=>{const n=s.newCat.trim();if(!n)return;this.upd(x=>this.patchHouse(x,hh=>Object.assign({},hh,{categories:hh.categories.concat([{id:uid(),name:n,icon:'shopping-basket',tone:TONES[hh.categories.length%5]}])})));this.setState({newCat:''});},
+      signOut:()=>this.signOut(),resetDemo:()=>{const f=seed().data;const w=this.applyWeekPlanSeed(f);try{localStorage.setItem(SS,'u1');}catch(e){}this.setState({data:w,session:'u1',tab:'home',budgetDraft:String(w.households[0].budgetMonthly),houseDraft:w.households[0].name});},
+      recapWeekLabel:this.weekLabel(rw),recapTotalFmt:fmt(rTotal),recapStatus:rTotal>weekBudget?fmt(rTotal-weekBudget)+' over the weekly budget':fmt(weekBudget-rTotal)+' under the weekly budget',recapUnder:rTotal<=weekBudget&&rTotal>0,
+      recapCats:cats.map(c=>({name:c.name,icon:c.icon,bg:TINT[c.tone],spentFmt:fmt(rItems.filter(i=>i.categoryId===c.id).reduce((a,i)=>a+Number(i.price||0),0))})).filter(c=>c.spentFmt!=='฿0'),
+      recapBoughtCount:rItems.length,recapBought:rItems.map(i=>({name:i.name,who:this.user(i.boughtBy).name,priceLabel:i.price?fmt(i.price):'no price'})),recapLeftCount:rLeft.length,recapLeft:rLeft.map(i=>({name:i.name,qtyLabel:fmtQ(i.qtyNeeded-i.qtyBought)+' '+i.unit})),recapNoneLeft:rLeft.length===0
+    };
+  }
+  weekLabel(ws){return new Date(ws).toLocaleDateString('en-US',{month:'short',day:'numeric'}).toUpperCase();}
+  submitAuth(){const a=this.state.auth,email=a.email.trim().toLowerCase();if(!email.includes('@'))return this.setState({auth:Object.assign({},a,{error:'That email doesn\'t look right.'})});if(a.pass.length<6)return this.setState({auth:Object.assign({},a,{error:'Password needs 6+ characters.'})});
+    if(this.B){if(a.busy)return;if(a.mode==='up'&&!a.name.trim())return this.setState({auth:Object.assign({},a,{error:'Tell us your name.'})});
+      this.setState({auth:Object.assign({},a,{error:'',busy:true})});
+      (async()=>{const r=a.mode==='up'?await this.B.signUp(email,a.pass,a.name.trim()):await this.B.signIn(email,a.pass);
+        if(r.error)return this.setState({auth:Object.assign({},a,{busy:false,error:r.error.message})});
+        if(!r.userId)return this.setState({auth:Object.assign({},a,{busy:false,mode:'in',pass:'',error:'Check your inbox to confirm your email, then sign in here.'})});
+        let data=await this.B.load(r.userId);const u=data.users.find(x=>x.id===r.userId)||{id:r.userId,email};
+        if(a.mode==='up'&&a.house.trim()&&!this.house(data,r.userId)&&!this.pendingFor(data,u).length){await this.B.createHousehold(a.house.trim(),STARTER());data=await this.B.load(r.userId);}
+        this.setState({data,newHouseName:a.house.trim(),auth:{mode:'in',name:'',email:'',pass:'',house:'',error:''}},()=>this.enter(r.userId));
+      })().catch(e=>this.setState({auth:Object.assign({},a,{busy:false,error:String(e.message||e)})}));return;}
+    let d=this.state.data;let u=d.users.find(x=>x.email===email);
+    if(a.mode==='up'){if(u)return this.setState({auth:Object.assign({},a,{error:'That email already has an account. Sign in instead.'})});if(!a.name.trim())return this.setState({auth:Object.assign({},a,{error:'Tell us your name.'})});
+      u={id:uid(),name:a.name.trim(),email,tone:TONES[d.users.length%5]};
+      d=Object.assign({},d,{users:d.users.concat([u])});
+      const inv=this.pendingFor(d,u);
+      if(!inv.length&&a.house.trim())d=Object.assign({},d,{households:d.households.concat([{id:uid(),name:a.house.trim(),budgetMonthly:12000,members:[u.id],invites:[],categories:CATS.slice()}])});}
+    else if(!u)return this.setState({auth:Object.assign({},a,{error:'No account with that email. Try jina@home.app or create one.'})});
+    this.setState({data:d},()=>this.enter(u.id));}
+  enter(uid_){try{localStorage.setItem(SS,uid_);}catch(e){}const d=this.state.data;const u=d.users.find(x=>x.id===uid_);const hh=this.house(d,uid_);const inv=this.pendingFor(d,u);this.setState({session:uid_,tab:'home',sheet:inv.length&&hh?'invite':null,budgetDraft:hh?String(hh.budgetMonthly):'',houseDraft:hh?hh.name:''});}
+  joinHouse(hid){const me=this.me();if(this.B){(async()=>{await this.B.acceptInvite(hid);const data=await this.B.load(me.id);const hh=this.house(data,me.id);this.setState({data,sheet:null,tab:'home',budgetDraft:hh?String(hh.budgetMonthly):'',houseDraft:hh?hh.name:''});})().catch(e=>alert(e.message||e));return;}this.upd(d=>{let nd=Object.assign({},d,{households:d.households.map(h=>{let x=Object.assign({},h,{members:h.members.filter(id=>id!==me.id)});if(x.members.length===0&&h.id!==hid)return null;if(h.id===hid)x=Object.assign({},x,{members:x.members.concat([me.id]),invites:(x.invites||[]).map(i=>i.email===me.email?Object.assign({},i,{status:'accepted'}):i)});return x;}).filter(Boolean)});return this.notify(nd,me.name+' joined the house.',me.id);});const hh=this.state.data.households.find(x=>x.id===hid);this.setState({sheet:null,tab:'home',budgetDraft:hh?String(hh.budgetMonthly):'',houseDraft:hh?hh.name:''});}
+  declineInvite(hid){const me=this.me();if(this.B){(async()=>{await this.B.declineInvite(hid);const data=await this.B.load(me.id);this.setState({data,sheet:null});})().catch(e=>alert(e.message||e));return;}this.upd(d=>Object.assign({},d,{households:d.households.map(h=>h.id===hid?Object.assign({},h,{invites:(h.invites||[]).map(i=>i.email===me.email?Object.assign({},i,{status:'declined'}):i)}):h)}));this.setState({sheet:null});}
+  createHouse(){const me=this.me();const n=this.state.newHouseName.trim();if(!n)return;if(this.B){if(this._creating)return;this._creating=true;(async()=>{await this.B.createHousehold(n,STARTER());const data=await this.B.load(me.id);this.setState({data,newHouseName:''},()=>this.enter(me.id));})().catch(e=>alert(e.message||e)).finally(()=>{this._creating=false;});return;}this.upd(d=>Object.assign({},d,{households:d.households.concat([{id:uid(),name:n,budgetMonthly:12000,members:[me.id],invites:[],categories:CATS.slice()}])}));this.setState({newHouseName:'',tab:'home',budgetDraft:'12000',houseDraft:n});}
+  submitAddItem(fromStock){const f=this.state.form,me=this.me();const name=f.name.trim();if(!name)return;const qty=Math.max(0.1,Number(f.qty)||1);const ws=weekStart(Date.now());
+    this.upd(d=>{let items=d.items.slice();const ex=items.find(i=>i.weekStart===ws&&i.name.toLowerCase()===name.toLowerCase()&&i.unit===f.unit&&i.qtyBought<i.qtyNeeded);let id;
+      if(ex){id=ex.id;items=items.map(i=>i===ex?Object.assign({},i,{qtyNeeded:Math.round((i.qtyNeeded+qty)*10)/10}):i);}else{id=uid();items.push({id,name,categoryId:f.cat,qtyNeeded:qty,unit:f.unit,qtyBought:0,price:null,addedBy:me.id,boughtBy:null,boughtAt:null,source:fromStock?'stock':'manual',menuId:null,weekStart:ws,rolled:false,createdAt:Date.now()});}
+      let nd=Object.assign({},d,{items});if(fromStock)nd.stock=d.stock.concat([{id:uid(),name,categoryId:f.cat,qty,unit:f.unit,addedBy:me.id,listItemId:id,createdAt:Date.now()}]);
+      return this.notify(nd,fromStock?me.name+' marked '+name+' out of stock. '+fmtQ(qty)+' '+f.unit+' added to the list.':me.name+' added '+fmtQ(qty)+' '+f.unit+' '+name+' to the list.',me.id);});
+    this.setState({sheet:null,tab:'list',listMode:fromStock?'stock':'shop'});}
+  swipeStart(e,id){if(e.pointerType==='mouse'&&e.button!==0)return;const open=this.state.swipe&&this.state.swipe.id===id&&!this.state.swipe.dragging?this.state.swipe.x:0;this._sw={id,sx:e.clientX,sy:e.clientY,base:open,moved:false,axis:null};}
+  swipeMove(e,id){const w=this._sw;if(!w||w.id!==id)return;const dx=e.clientX-w.sx,dy=e.clientY-w.sy;if(!w.axis){if(Math.abs(dx)<6&&Math.abs(dy)<6)return;w.axis=Math.abs(dx)>Math.abs(dy)?'x':'y';if(w.axis==='x'&&e.currentTarget.setPointerCapture)try{e.currentTarget.setPointerCapture(e.pointerId);}catch(err){}}
+    if(w.axis!=='x')return;w.moved=true;let x=Math.min(0,Math.max(-200,w.base+dx));this.setState({swipe:{id,x,dragging:true}});}
+  swipeEnd(e,id){const w=this._sw;if(!w||w.id!==id)return;this._sw=null;if(!w.moved){if(this.state.swipe&&this.state.swipe.id===id)this.setState({swipe:null});return;}this._swiped=Date.now();const x=this.state.swipe?this.state.swipe.x:0;
+    if(x<-170){this.removeItem(id);return;}this.setState({swipe:x<-50?{id,x:-96,dragging:false}:null});}
+  refresh(){this.setState({ptr:{h:56,drag:false,busy:true}});if(this.B){setTimeout(()=>location.reload(),300);return;}
+    // Re-read stored data (Supabase fetch goes here later), apply week rollover, then reload for fresh code.
+    setTimeout(()=>{let data=null;try{data=JSON.parse(localStorage.getItem(LS));}catch(e){}if(data&&data.menus){this.setState({data:this.rollover(data)});}
+      setTimeout(()=>{try{location.reload();}catch(e){this.setState({ptr:{h:0,drag:false,busy:false}});}},300);},500);}
+  removeItem(id){const it=this.state.data.items.find(i=>i.id===id);this.setState({swipe:null});this.upd(d=>this.notify(Object.assign({},d,{items:d.items.filter(i=>i.id!==id)}),this.me().name+' removed '+(it?it.name.toLowerCase():'an item')+' from the list.',this.me().id));}
+  openBuy(id){if(this._swiped&&Date.now()-this._swiped<400)return;if(this.state.swipe){this.setState({swipe:null});return;}const i=this.state.data.items.find(x=>x.id===id);if(!i)return;const rem=i.qtyNeeded-i.qtyBought;this.setState({sheet:'buy',sheetId:id,buy:{qty:Math.max(0,Math.ceil(rem)),price:i.price?String(i.price):''}});}
+  submitBuy(q){const s=this.state,me=this.me();const price=s.buy.price!==''?Number(s.buy.price):null;
+    this.upd(d=>{const it=d.items.find(i=>i.id===s.sheetId);if(!it)return d;const got=Math.min(q,it.qtyNeeded-it.qtyBought);if(got<=0)return d;const nb=Math.round((it.qtyBought+got)*10)/10;const left=Math.round((it.qtyNeeded-nb)*10)/10;
+      const items=d.items.map(i=>i.id===it.id?Object.assign({},i,{qtyBought:nb,boughtBy:me.id,boughtAt:Date.now(),price:price!=null?(i.price&&i.qtyBought>0?Number(i.price)+price:price):i.price}):i);
+      const txt=left>0?me.name+' bought '+fmtQ(got)+' of '+fmtQ(it.qtyNeeded)+' '+it.name.toLowerCase()+'. '+fmtQ(left)+' still to buy.':me.name+' bought '+fmtQ(got)+' '+it.unit+' '+it.name.toLowerCase()+(price?' for '+fmt(price):'')+'.';
+      return this.notify(Object.assign({},d,{items}),txt,me.id);});
+    this.setState({sheet:null});}
+  submitPrice(){const s=this.state;const price=s.buy.price!==''?Number(s.buy.price):null;this.upd(d=>Object.assign({},d,{items:d.items.map(i=>i.id===s.sheetId?Object.assign({},i,{price}):i)}));this.setState({sheet:null});}
+  onPhoto(e){const f=e.target.files&&e.target.files[0];e.target.value='';if(!f)return;const r=new FileReader();r.onload=()=>{const img=new Image();img.onload=()=>{const c=document.createElement('canvas');const sc=Math.min(1,640/Math.max(img.width,img.height));c.width=img.width*sc;c.height=img.height*sc;c.getContext('2d').drawImage(img,0,0,c.width,c.height);const url=c.toDataURL('image/jpeg',.8);
+      if(this.state.sheet==='menu')this.upd(d=>Object.assign({},d,{menus:d.menus.map(m=>m.id===this.state.sheetId?Object.assign({},m,{photo:url}):m)}));else this.setState(x=>({nm:Object.assign({},x.nm,{photo:url})}));};img.src=r.result;};r.readAsDataURL(f);}
+  submitNewMenu(){const n=this.state.nm,me=this.me();const name=n.name.trim();if(!name)return;const ings=n.rows.filter(r=>r.name.trim()).map(r=>({name:r.name.trim(),qty:r.qty!==''?Number(r.qty):null,unit:r.unit,categoryId:r.cat,staple:!!r.staple}));
+    if(n.editId){const ws=weekStart(Date.now());this.upd(d=>{const old=d.menus.find(m=>m.id===n.editId);const m=Object.assign({},old,{name,portions:n.portions,photo:n.photo,ingredients:ings,updatedAt:Date.now()});let nd=Object.assign({},d,{menus:d.menus.map(x=>x.id===m.id?m:x)});const e=(nd.weekPlans[ws]||[]).find(p=>p.menuId===m.id);if(e)nd=this.addMenuToWeek(nd,m.id,e.portions,me.id,true);return this.notify(nd,me.name+' edited '+name+(e?' and refreshed its ingredients on the list.':'.'),me.id);});this.setState({sheet:'menu',sheetId:n.editId,md:{portions:n.portions}});return;}
+    const m={id:uid(),name,nameTh:'',portions:n.portions,photo:n.photo,ingredients:ings,createdBy:me.id,createdAt:Date.now()};
+    this.upd(d=>this.notify(Object.assign({},d,{menus:[m].concat(d.menus)}),me.name+' added a new menu: '+name+'.',me.id));this.setState({sheet:'menu',sheetId:m.id,md:{portions:n.portions},search:'',filter:'all'});}
+  addStapleToList(i){const me=this.me(),ws=weekStart(Date.now());this.upd(d=>{if(d.items.some(x=>x.weekStart===ws&&x.name.toLowerCase()===i.name.toLowerCase()&&x.qtyBought<x.qtyNeeded))return d;const item={id:uid(),name:i.name,categoryId:i.categoryId,qtyNeeded:1,unit:'pcs',qtyBought:0,price:null,addedBy:me.id,boughtBy:null,boughtAt:null,source:'stock',menuId:null,weekStart:ws,rolled:false,createdAt:Date.now()};const nd=Object.assign({},d,{items:d.items.concat([item]),stock:d.stock.concat([{id:uid(),name:i.name,categoryId:i.categoryId,qty:1,unit:'pcs',addedBy:me.id,listItemId:item.id,createdAt:Date.now()}])});return this.notify(nd,me.name+' is out of '+i.name.toLowerCase()+'. 1 added to the list.',me.id);});}
+}
+</script>
+</body>
+</html>
