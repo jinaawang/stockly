@@ -90,14 +90,14 @@
         members: Array.from({ length: Math.max(1, r.member_count || 1) }, (_, i) => 'stub-' + i),
         invites: [{ email: (me.email || '').toLowerCase(), by, at: Date.now(), status: 'pending' }] });
     });
-    const data = { users: [], households, menus: [], items: [], stock: [], weekPlans: {}, notifs: [], expenses: [], hauls: [], _backend: true };
+    const data = { users: [], households, menus: [], items: [], stock: [], weekPlans: {}, notifs: [], expenses: [], hauls: [], subs: [], _backend: true };
     if (hid) {
       const ws = weekStart(Date.now());
       await s.rpc('rollover_week', { p_household: hid, p_week: toDate(ws) });
       const now = new Date();
       const cutoff = Math.min(new Date(now.getFullYear(), now.getMonth(), 1).getTime() - 7 * DAY, ws - 14 * DAY);
       const ecut = Math.min(new Date(now.getFullYear(), now.getMonth() - 6, 1).getTime(), Date.now() - 100 * DAY); // 6 past months + current
-      const [h, members, invites, cats, menus, plans, items, stock, notifs, reads, bcats, pcards, exps, hauls] = await Promise.all([
+      const [h, members, invites, cats, menus, plans, items, stock, notifs, reads, bcats, pcards, exps, hauls, subsR] = await Promise.all([
         s.from('households').select('*').eq('id', hid).single(),
         s.from('household_members').select('user_id, profiles(id,name,email,tone,avatar_url)').eq('household_id', hid),
         s.from('household_invites').select('*').eq('household_id', hid),
@@ -111,9 +111,10 @@
         s.from('budget_categories').select('*').eq('household_id', hid).order('sort'),
         s.from('payment_cards').select('*').eq('household_id', hid).order('created_at'),
         s.from('expenses').select('*').eq('household_id', hid).gte('spent_at', iso(ecut)),
-        s.from('hauls').select('*').eq('household_id', hid).gte('at', iso(ecut))
+        s.from('hauls').select('*').eq('household_id', hid).gte('at', iso(ecut)),
+        s.from('subscriptions').select('*').eq('household_id', hid).order('created_at')
       ]);
-      [h, members, invites, cats, menus, plans, items, stock, notifs, reads, bcats, pcards, exps, hauls].forEach(chk);
+      [h, members, invites, cats, menus, plans, items, stock, notifs, reads, bcats, pcards, exps, hauls, subsR].forEach(chk);
       bcKeyToId = {}; bcIdToKey = {};
       const budgetCats = (bcats.data || []).map(c => { const pid = c.key || c.id; bcKeyToId[pid] = c.id; bcIdToKey[c.id] = pid; return { id: pid, name: c.name, icon: c.icon, tone: c.tone, period: c.period, budget: c.budget }; });
       const bcid = id => (id ? bcIdToKey[id] || id : null);
@@ -133,6 +134,7 @@
       data.expenses = (exps.data || []).map(e => ({ id: e.id, amount: Number(e.amount), budgetCatId: bcid(e.budget_category_id), method: e.method, cardId: e.card_id, place: e.place || '', note: e.note || '',
         by: e.spent_by, at: msOf(e.spent_at), haulId: e.haul_id, createdAt: msOf(e.created_at) }));
       data.hauls = (hauls.data || []).map(x => ({ id: x.id, place: x.place || '', method: x.method, cardId: x.card_id, by: x.by_user, at: msOf(x.at), lines: x.lines || [] }));
+      data.subs = (subsR.data || []).map(x => ({ id: x.id, name: x.name, amount: Number(x.amount), period: x.period, start: fromDate(x.renews_on), method: x.method, cardId: x.card_id, by: x.added_by, createdAt: msOf(x.created_at) }));
       const readSet = new Set((reads.data || []).map(r => r.notification_id));
       data.notifs = (notifs.data || []).map(n => ({ id: n.id, who: n.actor_id, text: n.text, at: msOf(n.created_at), kind: n.kind, read: readSet.has(n.id) || n.actor_id === uid }));
     }
@@ -149,7 +151,7 @@
     if (channel && channelHid === hid) return;
     teardown(); channelHid = hid;
     channel = client().channel('stockly-' + hid);
-    ['list_items', 'stock_items', 'week_plans', 'menus', 'menu_ingredients', 'notifications', 'household_invites', 'households', 'household_members', 'categories', 'budget_categories', 'payment_cards', 'expenses', 'hauls']
+    ['list_items', 'stock_items', 'week_plans', 'menus', 'menu_ingredients', 'notifications', 'household_invites', 'households', 'household_members', 'categories', 'budget_categories', 'payment_cards', 'expenses', 'hauls', 'subscriptions']
       .forEach(t => channel.on('postgres_changes', { event: '*', schema: 'public', table: t }, () => scheduleReload()));
     channel.subscribe();
   }
@@ -274,6 +276,12 @@
       spent_by: uOrNull(e.by), spent_at: iso(e.at) || new Date().toISOString(), created_at: iso(e.createdAt) || new Date().toISOString() }));
     if (upE.length) chk(await s.from('expenses').upsert(upE));
     const delE = (prev.expenses || []).filter(e => !nE[e.id] && isUuid(e.id)).map(e => e.id);
+    const pSb = byId(prev.subs), nSb = byId(next.subs);
+    const upSb = (next.subs || []).filter(x => isUuid(x.id) && (!pSb[x.id] || changed(pSb[x.id], x))).map(x => ({ id: x.id, household_id: H, name: x.name, amount: Math.round(Number(x.amount) || 0),
+      period: ['week', 'year'].includes(x.period) ? x.period : 'month', renews_on: toDate(x.start), method: x.method, card_id: uOrNull(x.cardId), added_by: uOrNull(x.by) }));
+    if (upSb.length) chk(await s.from('subscriptions').upsert(upSb));
+    const delSb = (prev.subs || []).filter(x => !nSb[x.id] && isUuid(x.id)).map(x => x.id);
+    if (delSb.length) chk(await s.from('subscriptions').delete().in('id', delSb));
     const delH = (prev.hauls || []).filter(x => !nH[x.id] && isUuid(x.id)).map(x => x.id);
     // notifications + reads
     const pN = byId(prev.notifs);

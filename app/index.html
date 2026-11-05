@@ -295,8 +295,9 @@ input,select,textarea,button{font-family:Manrope,'Noto Sans Thai',sans-serif}
       <x-import component-from-global-scope="RestockDesignSystem_25704b.GradientCard" gradient="{{ spendGradient }}" padding="{{ n24 }}" radius="28px" hint-size="100%,170px">
         <div style="display:flex;flex-direction:column;gap:14px;color:{{ spendInk }}">
           <div style="font:700 11px Manrope;letter-spacing:.12em">{{ spendEyebrow }}</div>
-          <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap"><span style="font:800 44px/1 Figtree;letter-spacing:-0.03em;font-variant-numeric:tabular-nums">{{ spendTotalFmt }}</span><sc-if value="{{ spendShowBudget }}" hint-placeholder-val="{{ true }}"><span style="font:500 15px Manrope">of {{ spendBudgetFmt }}</span></sc-if></div>
+          <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap"><span style="font:800 44px/1 Figtree;letter-spacing:-0.03em;font-variant-numeric:tabular-nums">{{ spendTotalFmt }}</span><sc-if value="{{ spendShowOf }}" hint-placeholder-val="{{ true }}"><span style="font:500 15px Manrope">of {{ spendBudgetFmt }}</span></sc-if><sc-if value="{{ spendHasSubs }}" hint-placeholder-val="{{ false }}"><span style="font:500 15px Manrope">spent</span></sc-if></div>
           <sc-if value="{{ spendShowBudget }}" hint-placeholder-val="{{ true }}"><x-import component-from-global-scope="RestockDesignSystem_25704b.ProgressBar" value="{{ spendTotal }}" max="{{ spendBudget }}" tone="{{ spendBarTone }}" height="{{ n10 }}" track="rgba(255,253,246,.35)" hint-size="100%,10px"></x-import></sc-if>
+          <sc-if value="{{ spendHasSubs }}" hint-placeholder-val="{{ false }}"><div style="font:500 13px Manrope;font-variant-numeric:tabular-nums;margin-top:-6px">{{ spendSubLine }}</div></sc-if>
           <div style="font:600 14px Manrope">{{ spendStatus }}</div>
           <sc-if value="{{ spendHasNote }}" hint-placeholder-val="{{ false }}"><div style="display:flex;align-items:center;gap:8px;background:rgba(255,253,246,.6);backdrop-filter:blur(12px);border-radius:14px;padding:10px 14px;font:600 14px Manrope;color:#26243D"><i class="icon-calendar-clock" style="font-size:18px"></i>{{ spendNote }}</div></sc-if>
         </div>
@@ -395,6 +396,51 @@ input,select,textarea,button{font-family:Manrope,'Noto Sans Thai',sans-serif}
               <sc-if value="{{ m.showBar }}" hint-placeholder-val="{{ true }}"><x-import component-from-global-scope="RestockDesignSystem_25704b.ProgressBar" value="{{ m.total }}" max="{{ m.budget }}" tone="{{ m.tone }}" height="{{ n6 }}" hint-size="100%,6px"></x-import></sc-if>
               <span style="font:500 12px Manrope;color:{{ m.subColor }}">{{ m.sub }}</span>
             </button>
+          </sc-for>
+        </div>
+      </div>
+      </sc-if>
+    </div>
+    </sc-if>
+
+    <!-- SUBSCRIPTIONS -->
+    <sc-if value="{{ tabSubs }}" hint-placeholder-val="{{ false }}">
+    <div style="display:flex;flex-direction:column;gap:18px;animation:rs-fade .32s cubic-bezier(.2,.8,.2,1)">
+      <x-import component-from-global-scope="RestockDesignSystem_25704b.GradientCard" gradient="sunset" padding="{{ n24 }}" radius="28px" hint-size="100%,170px">
+        <div style="display:flex;flex-direction:column;gap:14px;color:#26243D">
+          <div style="font:700 11px Manrope;letter-spacing:.12em">{{ subEyebrow }}</div>
+          <div style="display:flex;align-items:baseline;gap:8px;flex-wrap:wrap"><span style="font:800 44px/1 Figtree;letter-spacing:-0.03em;font-variant-numeric:tabular-nums">{{ subMoFmt }}</span><span style="font:500 15px Manrope">a month</span></div>
+          <div style="font:600 14px Manrope;font-variant-numeric:tabular-nums">{{ subYrLine }}</div>
+          <sc-if value="{{ hasNextSub }}" hint-placeholder-val="{{ true }}"><div style="display:flex;align-items:center;gap:8px;background:rgba(255,253,246,.6);backdrop-filter:blur(12px);border-radius:14px;padding:10px 14px;font:600 14px Manrope;color:#26243D"><i class="icon-calendar-clock" style="font-size:18px"></i>{{ subNextText }}</div></sc-if>
+        </div>
+      </x-import>
+      <div style="font:500 13px/1.5 Manrope;color:#504E76;text-wrap:pretty">Renewals count toward total spent in Money and show on card statements. They don't count against your budgets.</div>
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <div style="display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap;gap:8px">
+          <span style="font:800 18px Figtree;letter-spacing:-0.02em">Your subscriptions</span>
+          <x-import component-from-global-scope="RestockDesignSystem_25704b.Button" variant="accent" size="sm" icon-left="plus" on-click="{{ openAddSub }}" hint-size="auto,36px">Add subscription</x-import>
+        </div>
+        <div style="background:#FFFDF6;border-radius:20px;padding:4px 16px;display:flex;flex-direction:column">
+          <sc-for list="{{ subRows }}" as="sb" hint-placeholder-count="3">
+            <button onClick="{{ sb.open }}" style="display:flex;align-items:center;gap:12px;padding:12px 0;border:0;border-bottom:1px solid #F5EDCC;background:none;cursor:pointer;text-align:left;width:100%">
+              <div style="width:40px;height:40px;border-radius:12px;background:{{ sb.bg }};display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="icon-repeat" style="font-size:18px;color:#3A3858"></i></div>
+              <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px"><span style="font:700 15px Manrope;color:#26243D">{{ sb.name }}</span><span style="font:500 12px/1.4 Manrope;color:{{ sb.subColor }}">{{ sb.sub }}</span></div>
+              <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px;flex-shrink:0"><span style="font:700 15px Figtree;font-variant-numeric:tabular-nums;color:#26243D;white-space:nowrap">{{ sb.amtFmt }}</span><span style="font:500 12px Manrope;color:#8B89A6">{{ sb.per }}</span></div>
+            </button>
+          </sc-for>
+          <sc-if value="{{ noSubs }}" hint-placeholder-val="{{ false }}"><div style="padding:20px 0;font:500 14px/1.5 Manrope;color:#504E76">Nothing yet. Add streaming, phone plans, the gym, anything that renews.</div></sc-if>
+        </div>
+      </div>
+      <sc-if value="{{ hasSubs }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;flex-direction:column;gap:10px">
+        <span style="font:800 18px Figtree;letter-spacing:-0.02em">By payment method</span>
+        <div style="background:#FFFDF6;border-radius:20px;padding:4px 16px;display:flex;flex-direction:column">
+          <sc-for list="{{ subMethods }}" as="p" hint-placeholder-count="2">
+            <div style="display:flex;align-items:center;gap:12px;padding:12px 0;border-bottom:1px solid #F5EDCC">
+              <div style="width:36px;height:36px;border-radius:12px;background:{{ p.bg }};display:flex;align-items:center;justify-content:center;flex-shrink:0"><i class="icon-{{ p.icon }}" style="font-size:18px;color:#3A3858"></i></div>
+              <div style="flex:1;min-width:0;display:flex;flex-direction:column;gap:2px"><span style="font:700 15px Manrope;color:#26243D">{{ p.name }}</span><span style="font:500 12px Manrope;color:#8B89A6">{{ p.count }}</span></div>
+              <div style="display:flex;flex-direction:column;align-items:flex-end;gap:2px"><span style="font:700 15px Figtree;font-variant-numeric:tabular-nums;color:#26243D">{{ p.amtFmt }}</span><span style="font:500 12px Manrope;color:#8B89A6">a month</span></div>
+            </div>
           </sc-for>
         </div>
       </div>
@@ -769,6 +815,30 @@ input,select,textarea,button{font-family:Manrope,'Noto Sans Thai',sans-serif}
   </div>
 </x-import>
 
+<!-- SHEET: add / edit subscription -->
+<x-import component-from-global-scope="RestockDesignSystem_25704b.Sheet" style="position:absolute;top:0;left:0;right:0;bottom:0" open="{{ sheetSub }}" on-close="{{ closeSheet }}" title="{{ subTitle }}" hint-size="0px,0px">
+  <div style="display:flex;flex-direction:column;gap:16px;padding-bottom:calc(16px + env(safe-area-inset-bottom));min-width:0;overflow-x:hidden">
+    <x-import component-from-global-scope="RestockDesignSystem_25704b.Input" label="What is it?" placeholder="e.g. Netflix, phone plan, gym" value="{{ subName }}" on-change="{{ setSubName }}" hint-size="100%,72px"></x-import>
+    <x-import component-from-global-scope="RestockDesignSystem_25704b.Input" label="How much each time?" prefix="฿" type="number" placeholder="0" value="{{ subAmount }}" on-change="{{ setSubAmount }}" hint-size="100%,72px"></x-import>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <span style="font:700 13px Manrope;color:#3A3858">Billed</span>
+      <x-import component-from-global-scope="RestockDesignSystem_25704b.SegmentedControl" options="{{ subPeriods }}" value="{{ subPeriod }}" on-change="{{ setSubPeriod }}" full-width="{{ true }}" hint-size="100%,44px"></x-import>
+    </div>
+    <x-import component-from-global-scope="RestockDesignSystem_25704b.Input" label="Next renewal" type="date" value="{{ subDate }}" on-change="{{ setSubDate }}" hint-size="100%,72px"></x-import>
+    <div style="display:flex;flex-direction:column;gap:8px">
+      <span style="font:700 13px Manrope;color:#3A3858">Paid with</span>
+      <x-import component-from-global-scope="RestockDesignSystem_25704b.SegmentedControl" options="{{ methodOptions }}" value="{{ subMethod }}" on-change="{{ setSubMethod }}" full-width="{{ true }}" hint-size="100%,44px"></x-import>
+    </div>
+    <sc-if value="{{ subIsCard }}" hint-placeholder-val="{{ false }}">
+      <sc-if value="{{ hasCards }}" hint-placeholder-val="{{ true }}"><x-import component-from-global-scope="RestockDesignSystem_25704b.Select" label="Which card?" options="{{ cardOptions }}" value="{{ subCard }}" on-change="{{ setSubCard }}" hint-size="100%,72px"></x-import></sc-if>
+      <sc-if value="{{ noCards }}" hint-placeholder-val="{{ false }}"><div style="background:#FEF0D2;border-radius:14px;padding:12px 14px;display:flex;align-items:center;gap:10px;flex-wrap:wrap"><span style="flex:1;font:500 14px/1.4 Manrope">No cards yet. Add one in Household first.</span><x-import component-from-global-scope="RestockDesignSystem_25704b.Button" variant="soft" size="sm" on-click="{{ goCards }}" hint-size="auto,36px">Add a card</x-import></div></sc-if>
+    </sc-if>
+    <div style="font:500 13px/1.5 Manrope;color:#8B89A6">We remind everyone 3 days before it renews.</div>
+    <x-import component-from-global-scope="RestockDesignSystem_25704b.Button" variant="primary" size="lg" full-width="{{ true }}" on-click="{{ submitSub }}" hint-size="100%,56px">{{ subCta }}</x-import>
+    <sc-if value="{{ subEditing }}" hint-placeholder-val="{{ false }}"><x-import component-from-global-scope="RestockDesignSystem_25704b.Button" variant="ghost" size="sm" icon-left="trash-2" on-click="{{ deleteSub }}" hint-size="auto,36px">Delete subscription</x-import></sc-if>
+  </div>
+</x-import>
+
 <!-- SHEET: finish shop (haul) -->
 <x-import component-from-global-scope="RestockDesignSystem_25704b.Sheet" style="position:absolute;top:0;left:0;right:0;bottom:0" open="{{ sheetHaul }}" on-close="{{ closeSheet }}" title="Finish the shop" hint-size="0px,0px">
   <div style="display:flex;flex-direction:column;gap:16px;padding-bottom:calc(16px + env(safe-area-inset-bottom));min-width:0;overflow-x:hidden">
@@ -820,12 +890,15 @@ const dayIn=(y,m,d)=>new Date(y,m,Math.min(d,new Date(y,m+1,0).getDate())).getTi
 const onOrAfter=(t,d)=>{const x=new Date(sod(t));const c=dayIn(x.getFullYear(),x.getMonth(),d);return c>=x.getTime()?c:dayIn(x.getFullYear(),x.getMonth()+1,d);};
 const before=(t,d)=>{const x=new Date(sod(t));const c=dayIn(x.getFullYear(),x.getMonth(),d);return c<x.getTime()?c:dayIn(x.getFullYear(),x.getMonth()-1,d);};
 const cardCycle=(c,now)=>{const S=c.statementDay||c.dueDay;const end=onOrAfter(now,S);return{start:before(end,S)+864e5,end:end+864e5,due:onOrAfter(end+864e5,c.dueDay)};};
+const addP=(t,p,k)=>{const x=new Date(t);if(p==='week')return new Date(x.getFullYear(),x.getMonth(),x.getDate()+7*k).getTime();const y=x.getFullYear()+(p==='year'?k:0),m=x.getMonth()+(p==='year'?0:k);return new Date(y,m,Math.min(x.getDate(),new Date(y,m+1,0).getDate())).getTime();};
+const subNext=(sb,now)=>{const s0=sod(now);let k=0,t=sb.start;while(t<s0&&k<1200){k++;t=addP(sb.start,sb.period,k);}return t;};
+const subCharges=(sb,lo,hi)=>{const out=[],st=sb.start,P=sb.period,x=new Date(st),y=new Date(lo);let k=P==='week'?Math.floor((lo-st)/(7*864e5))-1:P==='year'?y.getFullYear()-x.getFullYear()-1:(y.getFullYear()-x.getFullYear())*12+y.getMonth()-x.getMonth()-1;let t=addP(st,P,k),g=0;while(t<hi&&g<400){if(t>=lo)out.push(t);k++;g++;t=addP(st,P,k);}return out;};
 const cardNextDue=(c,now)=>{const S=c.statementDay||c.dueDay;const due=onOrAfter(now,c.dueDay);const stmt=before(due,S);return{due,start:before(stmt,S)+864e5,end:stmt+864e5};};
 const defStmt=due=>((Number(due)+9)%31)+1;
 const dfmt=t=>new Date(t).toLocaleDateString('en-US',{month:'short',day:'numeric'});
 const isoDay=t=>{const x=new Date(t);return x.getFullYear()+'-'+String(x.getMonth()+1).padStart(2,'0')+'-'+String(x.getDate()).padStart(2,'0');};
 const dayWord=t=>{const d=Math.round((sod(Date.now())-sod(t))/864e5);return d===0?'Today':d===1?'Yesterday':dfmt(t);};
-function norm(data){const fixH=h=>Object.assign({},h,{budgetCats:h.budgetCats&&h.budgetCats.length?h.budgetCats:BCATS.slice(),cards:h.cards||[],categories:(h.categories||[]).map(c=>c.budgetCatId?c:Object.assign({},c,{budgetCatId:AISLE_TO_BC[c.id]||'groceries'}))});return Object.assign({},data,{households:(data.households||[]).map(h=>h._stub?h:fixH(h)),expenses:data.expenses||[],hauls:data.hauls||[]});}
+function norm(data){const fixH=h=>Object.assign({},h,{budgetCats:h.budgetCats&&h.budgetCats.length?h.budgetCats:BCATS.slice(),cards:h.cards||[],categories:(h.categories||[]).map(c=>c.budgetCatId?c:Object.assign({},c,{budgetCatId:AISLE_TO_BC[c.id]||'groceries'}))});return Object.assign({},data,{households:(data.households||[]).map(h=>h._stub?h:fixH(h)),expenses:data.expenses||[],hauls:data.hauls||[],subs:data.subs||[]});}
 const STAPLE=/sauce|paste|oil|sugar|syrup|mirin|flour|rice powder|jasmine rice|sesame seeds|dried shrimp/i;
 const isStaple=i=>i.staple!=null?!!i.staple:(i.unit==='tbsp'||STAPLE.test(i.name));
 const uid=()=>(typeof crypto!=='undefined'&&crypto.randomUUID)?crypto.randomUUID():Math.random().toString(36).slice(2,10);
@@ -912,8 +985,9 @@ function seed(){
     {id:uid(),who:'u2',text:'Ham marked dish soap and tissue paper out of stock.',at:now-DAY,read:true},
     {id:uid(),who:'u2',text:'2 things rolled over from last week: mangoes, laundry detergent.',at:ws,read:true}
   ];
+  const _n=new Date();const subs=[{id:'s1',name:'Netflix',amount:419,period:'month',start:new Date(_n.getFullYear(),_n.getMonth(),12).getTime(),method:'card',cardId:'c1',by:'u1',createdAt:0},{id:'s2',name:'Spotify Family',amount:279,period:'month',start:new Date(_n.getFullYear(),_n.getMonth()-3,3).getTime(),method:'qr',cardId:null,by:'u2',createdAt:0},{id:'s3',name:'Google One 2TB',amount:3500,period:'year',start:new Date(_n.getFullYear()-1,_n.getMonth()+2,20).getTime(),method:'card',cardId:'c2',by:'u2',createdAt:0}];
   const cards=[{id:'c1',name:"Jina's Visa",dueDay:6,statementDay:16,tone:'lavender'},{id:'c2',name:"Ham's Mastercard",dueDay:2,statementDay:12,tone:'apricot'}];
-  const data={users,households:[{id:'h1',name:"Jina & Ham's place",budgetMonthly:16000,members:['u1','u2'],invites:[],categories:CATS.slice(),budgetCats:BCATS.slice(),cards}],menus,items,stock,weekPlans:{},notifs,expenses,hauls};
+  const data={users,households:[{id:'h1',name:"Jina & Ham's place",budgetMonthly:16000,members:['u1','u2'],invites:[],categories:CATS.slice(),budgetCats:BCATS.slice(),cards}],menus,items,stock,weekPlans:{},notifs,expenses,hauls,subs};
   data.weekPlans[ws]=[];
   return {data};
 }
@@ -927,7 +1001,7 @@ class Component extends DCLogic {
     if(this.props.startSignedOut)session=null;
     this.photoRef=React.createRef();
     this.state={data,session,tab:'home',listMode:'shop',spendMode:'week',search:'',filter:'all',menuLimit:8,sheet:null,sheetId:null,wide:typeof window!=='undefined'&&window.innerWidth>=820,
-      auth:{mode:'in',name:'',email:'',pass:'',house:'',error:''},form:{name:'',qty:'1',unit:'pcs',cat:'veg'},buy:{qty:0,price:''},md:{portions:1},nm:{editId:null,name:'',portions:2,photo:null,rows:[{name:'',qty:'',unit:'g',cat:'veg',staple:false}]},ptr:{h:0,drag:false,busy:false},payFilter:'all',exp:{editId:null,amount:'',place:'',cat:'groceries',method:'qr',cardId:'',date:''},haul:{place:'',method:'qr',cardId:'',amounts:{}},bcDrafts:{},newBC:{open:false,name:'',icon:'utensils',period:'month',amount:''},newCard:{name:'',due:'6',stmt:''},newCatBC:'groceries',recapPeriod:'week',push:(typeof Notification!=='undefined'?Notification.permission:'unsupported'),prefs:(()=>{try{return Object.assign({added:true,bought:true,recap:true,due:true},JSON.parse(localStorage.getItem('restock.prefs')||'{}'));}catch(e){return{added:true,bought:true,recap:true};}})(),inviteEmail:'',newCat:'',budgetDraft:'',houseDraft:'',newHouseName:'',recapWeek:null,booting:true};
+      auth:{mode:'in',name:'',email:'',pass:'',house:'',error:''},form:{name:'',qty:'1',unit:'pcs',cat:'veg'},buy:{qty:0,price:''},md:{portions:1},nm:{editId:null,name:'',portions:2,photo:null,rows:[{name:'',qty:'',unit:'g',cat:'veg',staple:false}]},ptr:{h:0,drag:false,busy:false},payFilter:'all',exp:{editId:null,amount:'',place:'',cat:'groceries',method:'qr',cardId:'',date:''},haul:{place:'',method:'qr',cardId:'',amounts:{}},sub:{editId:null,name:'',amount:'',period:'month',date:'',method:'card',cardId:''},bcDrafts:{},newBC:{open:false,name:'',icon:'utensils',period:'month',amount:''},newCard:{name:'',due:'6',stmt:''},newCatBC:'groceries',recapPeriod:'week',push:(typeof Notification!=='undefined'?Notification.permission:'unsupported'),prefs:(()=>{try{return Object.assign({added:true,bought:true,recap:true,due:true},JSON.parse(localStorage.getItem('restock.prefs')||'{}'));}catch(e){return{added:true,bought:true,recap:true};}})(),inviteEmail:'',newCat:'',budgetDraft:'',houseDraft:'',newHouseName:'',recapWeek:null,booting:true};
     const h0=this.house(data,session);if(h0){this.state.budgetDraft=String(h0.budgetMonthly);this.state.houseDraft=h0.name;}
     this.state.data=this.rollover(this.state.data);
     if(!session){const w=this.applyWeekPlanSeed(this.state.data);this.state.data=w;}
@@ -1001,9 +1075,9 @@ class Component extends DCLogic {
     const weekMenus=plan.map(p=>d.menus.find(m=>m.id===p.menuId)).filter(Boolean).map(menuView);
     const sw=s.swipe||{};const groupsMap={};left.concat(bought.filter(i=>i.qtyBought>=i.qtyNeeded)).forEach(i=>{(groupsMap[i.categoryId]=groupsMap[i.categoryId]||[]).push(i);});
     const groups=cats.concat(Object.keys(groupsMap).filter(k=>!cats.some(c=>c.id===k)).map(k=>this.cat(k))).filter(c=>groupsMap[c.id]).map(c=>{const arr=groupsMap[c.id].slice().sort((a,b)=>(a.qtyBought>=a.qtyNeeded)-(b.qtyBought>=b.qtyNeeded)||a.createdAt-b.createdAt);return{name:c.name,icon:c.icon,bg:TINT[c.tone],count:arr.filter(i=>i.qtyBought<i.qtyNeeded).length+' left',items:arr.map(i=>{const rem=i.qtyNeeded-i.qtyBought;const done=rem<=0;const by=this.user(i.addedBy);return{name:i.name,qtyLabel:done?fmtQ(i.qtyNeeded)+' '+i.unit:(i.qtyBought>0?fmtQ(rem)+' '+i.unit+' left of '+fmtQ(i.qtyNeeded):fmtQ(i.qtyNeeded)+' '+i.unit),price:undefined,note:done?('Bought by '+this.user(i.boughtBy).name):(i.rolled?'Rolled over':i.source==='menu'?'From menu':i.source==='stock'?'Out at home':undefined),checked:done,addedBy:by.name,tone:by.tone,toggle:()=>this.openBuy(i.id),open:()=>this.openBuy(i.id),x:sw.id===i.id?sw.x:0,transition:sw.id===i.id&&sw.dragging?'none':'transform .32s cubic-bezier(.2,.8,.2,1)',delOpacity:sw.id===i.id&&sw.x<-10?1:0,remove:()=>this.removeItem(i.id),pd:e=>this.swipeStart(e,i.id),pm:e=>this.swipeMove(e,i.id),pu:e=>this.swipeEnd(e,i.id)};})};});
-    const nav=[['home','Home','house'],['menus','Menus','book-open'],['list','List','list-checks'],['spend','Money','wallet']];
-    const titles={home:'Hey '+me.name,menus:'Menus',list:'This week\'s list',spend:'Money',house:d.household.name};
-    const eyebrows={home:'WEEK OF '+this.weekLabel(ws),menus:d.menus.length+' MENUS',list:left.length+' LEFT · '+this.weekLabel(ws),spend:'BUDGETS · EXPENSES · CARDS',house:'HOUSEHOLD'};
+    const nav=[['home','Home','house'],['menus','Menus','book-open'],['list','List','list-checks'],['spend','Money','wallet'],['subs','Subs','repeat']];
+    const titles={home:'Hey '+me.name,menus:'Menus',list:'This week\'s list',spend:'Money',subs:'Subscriptions',house:d.household.name};
+    const eyebrows={home:'WEEK OF '+this.weekLabel(ws),menus:d.menus.length+' MENUS',list:left.length+' LEFT · '+this.weekLabel(ws),spend:'BUDGETS · EXPENSES · CARDS',subs:(d.subs||[]).length+' ACTIVE',house:'HOUSEHOLD'};
     const unread=d.notifs.filter(n=>!n.read).length;
     const notifView=n=>({photo:n.who?(this.user(n.who).photo||''):'',who:n.who?this.user(n.who).name:'stockly',tone:n.who?this.user(n.who).tone:'tangerine',text:n.text,when:ago(n.at),unread:!n.read});
     // spending
@@ -1028,7 +1102,7 @@ class Component extends DCLogic {
       authTitle:s.auth.mode==='in'?'Welcome back':'Set up your house',authModes:[{value:'in',label:'Sign in'},{value:'up',label:'Create account'}],authMode:s.auth.mode,setAuthMode:v=>this.setState(x=>({auth:Object.assign({},x.auth,{mode:v,error:''})})),isSignUp:s.auth.mode==='up',authName:s.auth.name,setAuthName:this.setAuth('name'),authEmail:s.auth.email,setAuthEmail:this.setAuth('email'),authPass:s.auth.pass,setAuthPass:this.setAuth('pass'),authHouse:s.auth.house,setAuthHouse:this.setAuth('house'),authError:s.auth.error||undefined,authCta:s.auth.busy?'One moment…':s.auth.mode==='in'?'Sign in':'Create account',submitAuth:()=>this.submitAuth(),
       navItems:nav.map(n=>({label:n[1],icon:n[2],go:()=>this.setState({tab:n[0]}),color:s.tab===n[0]?'#FFFDF6':'#3A3858',bg:s.tab===n[0]?'#504E76':'transparent'})),
       tabItems:nav.map(n=>({id:n[0],label:n[1],icon:n[2],badge:n[0]==='list'&&left.length>0})),tab:s.tab,setTab:v=>{this._lastY=0;this.setState({tab:v,navHidden:false});},
-      tabHome:s.tab==='home',tabMenus:s.tab==='menus',tabList:s.tab==='list',tabSpend:s.tab==='spend',tabHouse:s.tab==='house',
+      tabHome:s.tab==='home',tabMenus:s.tab==='menus',tabList:s.tab==='list',tabSpend:s.tab==='spend',tabSubs:s.tab==='subs',tabHouse:s.tab==='house',
       goList:()=>this.setState({tab:'list',listMode:'shop'}),goMenus:()=>this.setState({tab:'menus'}),goHouse:()=>this.setState({tab:'house',houseTab:'house'}),
       pageTitle:titles[s.tab],eyebrow:eyebrows[s.tab],meAvatar:me.photo||'',n48:48,meName:me.name,meTone:me.tone,hasUnread:unread>0,openNotifs:()=>{this.setState({sheet:'notifs'});this.upd(x=>Object.assign({},x,{notifs:x.notifs.map(n=>Object.assign({},n,{read:true}))}));},
       ptrHeight:s.ptr.h,ptrTransition:s.ptr.drag?'none':'height .32s cubic-bezier(.2,.8,.2,1)',ptrOpacity:Math.min(1,s.ptr.h/50),ptrRotate:Math.round(s.ptr.h*3),ptrAnim:s.ptr.busy?'rs-spin .8s linear infinite':'none',ptrLabel:s.ptr.busy?'Refreshing…':s.ptr.h>=70?'Let go to refresh':'Pull to refresh',
@@ -1083,14 +1157,31 @@ class Component extends DCLogic {
   }
   bc(id){const hh=this.house(this.state.data,this.me().id);return ((hh&&hh.budgetCats)||BCATS).find(c=>c.id===id)||{id,name:'Other',icon:'circle-dollar-sign',tone:'dusk',period:'month',budget:0};}
   bcOfAisle(aid){const c=this.cat(aid);return c.budgetCatId||AISLE_TO_BC[aid]||'groceries';}
-  allExp(d){const legacy=d.items.filter(i=>i.price&&i.boughtAt).map(i=>({id:'legacy-'+i.id,amount:Number(i.price),budgetCatId:this.bcOfAisle(i.categoryId),method:null,cardId:null,place:i.name,by:i.boughtBy,at:i.boughtAt,legacy:true,itemId:i.id}));return (d.expenses||[]).concat(legacy);}
+  allExp(d){const legacy=d.items.filter(i=>i.price&&i.boughtAt).map(i=>({id:'legacy-'+i.id,amount:Number(i.price),budgetCatId:this.bcOfAisle(i.categoryId),method:null,cardId:null,place:i.name,by:i.boughtBy,at:i.boughtAt,legacy:true,itemId:i.id}));
+    const now=Date.now(),n0=new Date(now),lo0=new Date(n0.getFullYear(),n0.getMonth()-7,1).getTime(),hi=sod(now)+DAY;const subs=[];
+    (d.subs||[]).forEach(sb=>{if(!(sb.amount>0)||!sb.start)return;const lo=Math.max(lo0,Math.min(sod(sb.createdAt||sb.start),sb.start));subCharges(sb,lo,hi).forEach(t=>subs.push({id:'sub-'+sb.id+'-'+t,amount:sb.amount,budgetCatId:null,method:sb.method,cardId:sb.cardId,place:sb.name,by:sb.by,at:t+9*3600e3,isSub:true,subId:sb.id}));});
+    return (d.expenses||[]).concat(legacy,subs);}
   methodLabel(e,cards){if(e.method==='card'){const c=(cards||[]).find(x=>x.id===e.cardId);return c?c.name:'Credit card';}const m=METHODS.find(x=>x.value===e.method);return m?m.label:'Payment not recorded';}
   unhauled(d,me){return d.items.filter(i=>i.boughtBy===me.id&&i.qtyBought>(i.qtyHauled||0)&&!i.price);}
-  checkDue(){const d=this.state.data,me=this.me(),hh=this.house(d,me.id);if(!hh||!hh.cards||!hh.cards.length)return;const now=Date.now();const exps=this.allExp(d);
-    hh.cards.forEach(c=>{const n=cardNextDue(c,now);const days=Math.round((n.due-sod(now))/DAY);if(days<0||days>3)return;const key='Card payment: '+c.name+' due '+dfmt(n.due);if(this.state.data.notifs.some(x=>x.text.indexOf(key)===0))return;
+  checkDue(){const d=this.state.data,me=this.me(),hh=this.house(d,me.id);if(!hh)return;const now=Date.now();const exps=this.allExp(d);const inW=n=>n===0?'today':n===1?'tomorrow':'in '+n+' days';
+    (d.subs||[]).forEach(sb=>{const nx=subNext(sb,now);const days=Math.round((nx-sod(now))/DAY);if(days<0||days>3)return;const key='Subscription: '+sb.name+' renews '+dfmt(nx);if(this.state.data.notifs.some(x=>x.text.indexOf(key)===0))return;
+      this.upd(x=>this.notify(x,key+' ('+inW(days)+'). '+fmt(sb.amount)+' on '+this.methodLabel(sb,hh.cards)+'.',null,'due'));});
+    (hh.cards||[]).forEach(c=>{const n=cardNextDue(c,now);const days=Math.round((n.due-sod(now))/DAY);if(days<0||days>3)return;const key='Card payment: '+c.name+' due '+dfmt(n.due);if(this.state.data.notifs.some(x=>x.text.indexOf(key)===0))return;
       const amt=exps.filter(e=>e.method==='card'&&e.cardId===c.id&&e.at>=n.start&&e.at<n.end).reduce((t,e)=>t+Number(e.amount),0);
       this.upd(x=>this.notify(x,key+' ('+(days===0?'today':days===1?'tomorrow':'in '+days+' days')+'). '+fmt(amt)+' from the last statement.',null,'due'));});}
   setExp(k){return v=>this.setState(x=>({exp:Object.assign({},x.exp,{[k]:v})}));}
+  openSub(id){const d=this.state.data;const cards=(this.house(d,this.me().id)||{}).cards||[];const sb=id?(d.subs||[]).find(x=>x.id===id):null;
+    if(sb)this.setState({sheet:'sub',sub:{editId:id,name:sb.name,amount:String(sb.amount),period:sb.period,date:isoDay(subNext(sb,Date.now())),method:sb.method||'qr',cardId:sb.cardId||(cards[0]?cards[0].id:'')}});
+    else this.setState({sheet:'sub',sub:{editId:null,name:'',amount:'',period:'month',date:isoDay(Date.now()),method:cards.length?'card':'qr',cardId:cards[0]?cards[0].id:''}});}
+  submitSub(){const s=this.state,me=this.me(),v=s.sub;const name=v.name.trim();const amount=Math.round(Number(v.amount));if(!name||!(amount>0))return;const cards=(this.house(s.data,me.id)||{}).cards||[];
+    const cardId=v.method==='card'?((cards.find(c=>c.id===v.cardId)||cards[0]||{}).id||null):null;if(v.method==='card'&&!cardId)return;
+    let start=sod(Date.now());if(v.date){const p=v.date.split('-').map(Number);start=new Date(p[0],p[1]-1,p[2]).getTime();}
+    const patch={name,amount,period:['week','year'].indexOf(v.period)>=0?v.period:'month',start,method:v.method,cardId};
+    if(v.editId)this.upd(d=>Object.assign({},d,{subs:(d.subs||[]).map(x=>x.id===v.editId?Object.assign({},x,patch):x)}));
+    else{const sb=Object.assign({id:uid(),by:me.id,createdAt:Date.now()},patch);this.upd(d=>this.notify(Object.assign({},d,{subs:[sb].concat(d.subs||[])}),me.name+' added '+name+' to subscriptions: '+fmt(amount)+' a '+patch.period+', '+this.methodLabel(sb,cards)+'.',me.id,'money'));}
+    this.setState({sheet:null});}
+  deleteSub(){const id=this.state.sub.editId;this.upd(d=>Object.assign({},d,{subs:(d.subs||[]).filter(x=>x.id!==id)}));this.setState({sheet:null});}
+  setSub(k){return v=>this.setState(x=>({sub:Object.assign({},x.sub,{[k]:v})}));}
   setHaul(k){return v=>this.setState(x=>({haul:Object.assign({},x.haul,{[k]:v})}));}
   openExpense(id){const d=this.state.data;const hh=this.house(d,this.me().id)||{};const cards=hh.cards||[];
     if(id){const e=(d.expenses||[]).find(x=>x.id===id);if(!e)return;this.setState({sheet:'expense',exp:{editId:id,amount:String(e.amount),place:e.place||'',cat:e.budgetCatId,method:e.method||'qr',cardId:e.cardId||'',date:isoDay(e.at)}});return;}
@@ -1128,7 +1219,7 @@ class Component extends DCLogic {
     const m0=new Date(ms);const nextMs=new Date(m0.getFullYear(),m0.getMonth()+1,1).getTime();
     const sum=a=>a.reduce((t,e)=>t+Number(e.amount||0),0);const inR=(a,b)=>exps.filter(e=>e.at>=a&&e.at<b);
     const budFor=p=>Math.round(bcs.reduce((t,c)=>t+prorate(c,p),0));const cardOf=id=>cards.find(c=>c.id===id);const tint=t=>TINT[t]||TINT.dusk;
-    const weekSpent=sum(inR(ws,ws+7*DAY)),weekBudget=budFor('week');
+    const weekSpent=sum(inR(ws,ws+7*DAY).filter(e=>!e.isSub)),weekBudget=budFor('week');
     let pf=s.payFilter||'all';const card=pf.indexOf('card:')===0?cardOf(pf.slice(5)):null;if(!(pf==='all'||pf==='cash'||pf==='qr'||pf==='cards'||card))pf='all';const allCards=pf==='cards';
     let mode=s.spendMode;if(mode==='cycle'&&!card)mode='month';const pastM=mode==='past'&&s.viewMonth?new Date(s.viewMonth):null;const isPast=mode==='past'&&!pastM;if(mode==='past')mode='month';
     let a,b,eyebrow,cy=null;
@@ -1137,7 +1228,7 @@ class Component extends DCLogic {
     else{cy=cardCycle(card,now);a=cy.start;b=cy.end;eyebrow='BILLING CYCLE · '+dfmt(a).toUpperCase()+' – '+dfmt(b-DAY).toUpperCase();}
     const isAll=pf==='all';const match=e=>isAll||(card?e.method==='card'&&e.cardId===card.id:allCards?e.method==='card':e.method===pf);
     const shown=inR(a,b).filter(match).sort((x,y)=>y.at-x.at);const pmode=mode==='cycle'?'month':mode;
-    const total=sum(shown),budget=budFor(pmode),over=total-budget;
+    const total=sum(shown),subTotal=sum(shown.filter(e=>e.isSub)),budgeted=total-subTotal,budget=budFor(pmode),over=budgeted-budget;
     const periodWord=pastM?'in '+pastM.toLocaleString('en-US',{month:'long'}):mode==='week'?'this week':mode==='month'?'this month':'this cycle';
     const pfLabel=card?card.name:isAll?'':allCards?'cards':METHODS.find(m=>m.value===pf).label;
     const next=card?cardNextDue(card,now):null;const nextAmt=next?sum(exps.filter(e=>e.method==='card'&&e.cardId===card.id&&e.at>=next.start&&e.at<next.end)):0;
@@ -1147,7 +1238,8 @@ class Component extends DCLogic {
     const pickPf=k=>()=>this.setState({payFilter:k,spendMode:s.spendMode==='past'?'past':k.indexOf('card:')===0?'cycle':(s.spendMode==='cycle'?'month':s.spendMode)});
     const payRowsFor=(list,condense)=>{const r=(condense?payList.slice(0,2).concat([cardsRow]):payList).map(p=>({name:p.name,icon:p.icon,bg:tint(p.tone),amt:sum(list.filter(p.f)),go:pickPf(p.key)}));const lg=sum(list.filter(e=>!e.method));if(lg)r.push({name:'Not recorded',icon:'circle-help',bg:TINT.dusk,amt:lg,go:()=>{}});return r.map(x=>Object.assign(x,{amtFmt:fmt(x.amt)}));};
     const catRows=bcs.map(c=>({name:c.name,icon:c.icon,bg:tint(c.tone),amt:sum(shown.filter(e=>e.budgetCatId===c.id))})).filter(r=>r.amt>0).map(r=>Object.assign(r,{amtFmt:fmt(r.amt)}));
-    const expRows=shown.map(e=>{const c=this.bc(e.budgetCatId);const u=this.user(e.by);const hl=e.haulId?hauls.find(x=>x.id===e.haulId):null;const n=hl?hl.lines.filter(l=>l.budgetCatId===e.budgetCatId).length:0;
+    if(subTotal)catRows.push({name:'Subscriptions',icon:'repeat',bg:tint('lavender'),amt:subTotal,amtFmt:fmt(subTotal)});
+    const expRows=shown.map(e=>{if(e.isSub)return{icon:'repeat',bg:tint('lavender'),title:e.place,sub:['Subscription',this.methodLabel(e,cards),dayWord(e.at)].join(' · '),amtFmt:fmt(e.amount),open:()=>this.setState({tab:'subs'},()=>this.openSub(e.subId))};const c=this.bc(e.budgetCatId);const u=this.user(e.by);const hl=e.haulId?hauls.find(x=>x.id===e.haulId):null;const n=hl?hl.lines.filter(l=>l.budgetCatId===e.budgetCatId).length:0;
       return{icon:c.icon,bg:tint(c.tone),title:e.place||c.name,sub:[c.name+(n?' · '+n+(n===1?' thing':' things'):''),this.methodLabel(e,cards),u.name,dayWord(e.at)].join(' · '),amtFmt:fmt(e.amount),open:()=>e.legacy?this.openBuy(e.itemId):this.openExpense(e.id)};});
     const dueSoon=cards.map(c=>{const n=cardNextDue(c,now);const days=Math.round((n.due-sod(now))/DAY);const amt=sum(exps.filter(e=>e.method==='card'&&e.cardId===c.id&&e.at>=n.start&&e.at<n.end));
       return{days,title:c.name+' is due '+(days===0?'today':days===1?'tomorrow':'in '+days+' days'),sub:fmt(amt)+' on the statement that closed '+dfmt(n.end-DAY)+'. Due '+dfmt(n.due)+'.',open:()=>this.setState({tab:'spend',payFilter:'card:'+c.id,spendMode:'cycle'})};}).filter(x=>x.days<=7).sort((x,y)=>x.days-y.days);
@@ -1159,10 +1251,16 @@ class Component extends DCLogic {
     // recap
     const rp=s.recapPeriod||'week';const rw=s.recapWeek||ws;const rm=rp==='month'&&s.recapMonth?new Date(s.recapMonth):m0;const ra=rp==='week'?rw:rm.getTime(),rb=rp==='week'?rw+7*DAY:new Date(rm.getFullYear(),rm.getMonth()+1,1).getTime();const rE=inR(ra,rb);const rT=sum(rE),rB=budFor(rp);
     const recapCats=bcs.map(c=>({name:c.name,icon:c.icon,bg:tint(c.tone),amt:sum(rE.filter(e=>e.budgetCatId===c.id))})).filter(r=>r.amt>0).map(r=>Object.assign(r,{spentFmt:fmt(r.amt)}));
-    const pastMonths=[];for(let k=1;k<=6;k++){const pa=new Date(m0.getFullYear(),m0.getMonth()-k,1),pb=new Date(m0.getFullYear(),m0.getMonth()-k+1,1);const pe=inR(pa.getTime(),pb.getTime()).filter(match);if(!pe.length)continue;const t=sum(pe),bd=budFor('month'),ov=t-bd;
-      pastMonths.push({label:pa.toLocaleString('en-US',{month:'long',year:'numeric'}),total:t,totalFmt:fmt(t),budget:Math.max(1,bd),showBar:isAll,tone:ov>0?'tangerine':'sage',
+    const pastMonths=[];for(let k=1;k<=6;k++){const pa=new Date(m0.getFullYear(),m0.getMonth()-k,1),pb=new Date(m0.getFullYear(),m0.getMonth()-k+1,1);const pe=inR(pa.getTime(),pb.getTime()).filter(match);if(!pe.length)continue;const t=sum(pe),tb=sum(pe.filter(e=>!e.isSub)),bd=budFor('month'),ov=tb-bd;
+      pastMonths.push({label:pa.toLocaleString('en-US',{month:'long',year:'numeric'}),total:tb,totalFmt:fmt(t),budget:Math.max(1,bd),showBar:isAll,tone:ov>0?'tangerine':'sage',
         sub:isAll?(ov>0?fmt(ov)+' over budget':fmt(-ov)+' under budget')+' · '+pe.length+' expenses':pe.length+' expenses with '+pfLabel,subColor:isAll&&ov>0?'#C4471A':'#8B89A6',
         open:()=>{this.setState({viewMonth:pa.getTime()});const mn=document.querySelector('main');if(mn)mn.scrollTop=0;}});}
+    const subsShown=(d.subs||[]).map(sb=>{const nx=subNext(sb,now);const days=Math.round((nx-sod(now))/DAY);const soon=days<=3;
+      return{nx,name:sb.name,bg:tint(sb.period==='year'?'apricot':sb.period==='week'?'sage':'lavender'),sub:this.methodLabel(sb,cards)+' · '+(soon?'Renews '+(days===0?'today':days===1?'tomorrow':'in '+days+' days'):'Renews '+dfmt(nx)+(sb.period==='year'?' '+new Date(nx).getFullYear():'')),subColor:soon?'#C4471A':'#8B89A6',amtFmt:fmt(sb.amount),per:'a '+(sb.period||'month'),mo:sb.period==='year'?sb.amount/12:sb.period==='week'?sb.amount*52/12:sb.amount,yr:sb.period==='year'?sb.amount:sb.period==='week'?sb.amount*52:sb.amount*12,open:()=>this.openSub(sb.id)};}).sort((x,y)=>x.nx-y.nx);
+    const subMo=Math.round(subsShown.reduce((t,x)=>t+x.mo,0)),subYr=Math.round(subsShown.reduce((t,x)=>t+x.yr,0));const sv=s.sub;
+    const subPaidM=sum(exps.filter(e=>e.isSub&&e.at>=ms&&e.at<nextMs));const nxs=subsShown[0];
+    const smG={};(d.subs||[]).forEach(sb=>{const k=sb.method==='card'?'card:'+sb.cardId:sb.method||'none';const g=smG[k]=smG[k]||{n:0,mo:0,sb};g.n++;g.mo+=sb.period==='year'?sb.amount/12:sb.period==='week'?sb.amount*52/12:sb.amount;});
+    const subMethods=Object.keys(smG).map(k=>{const g=smG[k],m=METHODS.find(x=>x.value===g.sb.method)||{icon:'circle-help',tone:'dusk'};const cd=g.sb.method==='card'?cardOf(g.sb.cardId):null;return{name:this.methodLabel(g.sb,cards),icon:m.icon,bg:tint(cd?cd.tone:m.tone),count:g.n+(g.n===1?' subscription':' subscriptions'),mo:g.mo,amtFmt:fmt(Math.round(g.mo))};}).sort((x,y)=>y.mo-x.mo);
     // forms
     const ex=s.exp;const dr=s.bcDrafts||{};const nb=s.newBC;const nc=s.newCard;
     const expH=ex.editId?(()=>{const e=(d.expenses||[]).find(x=>x.id===ex.editId);return e&&e.haulId?hauls.find(x=>x.id===e.haulId):null;})():null;
@@ -1170,7 +1268,7 @@ class Component extends DCLogic {
     const dayOptions=Array.from({length:31},(_,i)=>({value:String(i+1),label:ord(i+1)}));
     return {
       weekSpent,weekBudget,weekSpentFmt:fmt(weekSpent),weekBudgetFmt:fmt(weekBudget),underBudget:weekSpent>0&&weekSpent<weekBudget,underAmt:fmt(weekBudget-weekSpent),
-      fabLabel:s.tab==='spend'?'Add expense':'Add item',openFab:()=>s.tab==='spend'?this.openExpense(null):this.setState({sheet:'addItem',form:{name:'',qty:'1',unit:'pcs',cat:'veg'}}),openAddExpense:()=>this.openExpense(null),
+      fabLabel:s.tab==='spend'?'Add expense':s.tab==='subs'?'Add subscription':'Add item',openFab:()=>s.tab==='spend'?this.openExpense(null):s.tab==='subs'?this.openSub(null):this.setState({sheet:'addItem',form:{name:'',qty:'1',unit:'pcs',cat:'veg'}}),openAddExpense:()=>this.openExpense(null),
       houseTabs:[{value:'house',label:'Household'},{value:'budget',label:'Budget'},{value:'settings',label:'Settings'}],houseTab:s.houseTab||'house',setHouseTab:v=>this.setState({houseTab:v}),htHouse:(s.houseTab||'house')==='house',htBudget:s.houseTab==='budget',htSettings:s.houseTab==='settings',
       sectionRows:(H.categories||[]).map(c=>({name:c.name,icon:c.icon,bg:tint(c.tone),bcId:c.budgetCatId||AISLE_TO_BC[c.id]||'groceries',setBc:v=>this.upd(x=>this.patchHouse(x,hh=>Object.assign({},hh,{categories:hh.categories.map(y=>y.id===c.id?Object.assign({},y,{budgetCatId:v}):y)}))),canRemove:!CATS.some(x=>x.id===c.id),remove:()=>this.upd(x=>this.patchHouse(x,hh=>Object.assign({},hh,{categories:hh.categories.filter(y=>y.id!==c.id)})))})),
       bcChips:bcs.map(c=>({name:c.name,icon:c.icon,tone:c.tone==='dusk'?'neutral':c.tone,remove:c.id==='groceries'?undefined:()=>this.removeBC(c.id)})),
@@ -1183,7 +1281,7 @@ class Component extends DCLogic {
       cardTiles:cards.map(c=>{const cyc=cardCycle(c,now);const nx=cardNextDue(c,now);const days=Math.round((nx.due-sod(now))/DAY);const cs=sum(exps.filter(e=>e.method==='card'&&e.cardId===c.id&&e.at>=cyc.start&&e.at<cyc.end));const ns=sum(exps.filter(e=>e.method==='card'&&e.cardId===c.id&&e.at>=nx.start&&e.at<nx.end));
         return{name:c.name,bg:tint(c.tone),cycleFmt:fmt(cs),cycleLabel:'This cycle · '+dfmt(cyc.start)+' – '+dfmt(cyc.end-DAY),dueLabel:'Next payment due '+dfmt(nx.due)+(days<=3?(days===0?' (today)':days===1?' (tomorrow)':' (in '+days+' days)'):''),dueFmt:fmt(ns),dueBg:days<=3?'#FEF0D2':'#FDF8E2',open:()=>this.setState({payFilter:'card:'+c.id,spendMode:s.spendMode==='past'?'past':'cycle'})};}),
       spendGradient:isAll?(over>0?'peach':'dusk'):(card||allCards)?'sunset':'meadow',spendInk:isAll&&over<=0?'#FFFDF6':'#26243D',spendEyebrow:eyebrow+(isAll?'':' · '+pfLabel.toUpperCase()),
-      spendTotal:total,spendBudget:Math.max(1,budget),spendTotalFmt:fmt(total),spendBudgetFmt:fmt(budget),spendBarTone:over>0?'tangerine':'apricot',spendStatus:status,spendShowBudget:isAll,spendFiltered:!isAll,
+      spendTotal:budgeted,spendShowOf:isAll&&!subTotal,spendHasSubs:isAll&&subTotal>0,spendSubLine:fmt(budgeted)+' of '+fmt(budget)+' budget · '+fmt(subTotal)+' subscriptions',spendBudget:Math.max(1,budget),spendTotalFmt:fmt(total),spendBudgetFmt:fmt(budget),spendBarTone:over>0?'tangerine':'apricot',spendStatus:status,spendShowBudget:isAll,spendFiltered:!isAll,
       spendHasNote:!!card,spendNote:card?'Next payment '+fmt(nextAmt)+' due '+dfmt(next.due):'',budgetsHint:mode==='week'?'Monthly budgets shown per week':'Weekly budgets shown per month',
       catSpend:bcs.map(c=>({name:c.name,icon:c.icon,tone:c.tone,spent:sum(shown.filter(e=>e.budgetCatId===c.id)),budget:Math.max(1,Math.round(prorate(c,pmode)))})),
       payRows:payRowsFor(shown,true),catRows,noCatRows:catRows.length===0,expRows,noExp:expRows.length===0,spendPeriodWord:periodWord,
@@ -1193,7 +1291,11 @@ class Component extends DCLogic {
       recapStatus:rT>rB?fmt(rT-rB)+' over the '+(rp==='week'?'weekly':'monthly')+' budget':fmt(rB-rT)+' under the '+(rp==='week'?'weekly':'monthly')+' budget',recapUnder:rT<=rB&&rT>0,
       recapCats,recapEmpty:recapCats.length===0,recapPay:payRowsFor(rE).filter(r=>r.amt>0),recapIsWeek:rp==='week',
       recapShops:hauls.filter(x=>x.at>=ra&&x.at<rb).sort((x,y)=>y.at-x.at).map(x=>({place:x.place||'A shop',sub:this.user(x.by).name+' · '+x.lines.length+' things · '+dayWord(x.at),totalFmt:fmt(sum(exps.filter(e=>e.haulId===x.id)))})),recapHasShops:hauls.some(x=>x.at>=ra&&x.at<rb),
-      sheetExpense:s.sheet==='expense',sheetHaul:s.sheet==='haul',expTitle:ex.editId?'Edit expense':'Add an expense',expCta:ex.editId?'Save changes':'Add expense',expEditing:!!ex.editId,
+      sheetExpense:s.sheet==='expense',
+      subRows:subsShown,noSubs:subsShown.length===0,hasSubs:subsShown.length>0,subMethods,subEyebrow:subsShown.length+(subsShown.length===1?' SUBSCRIPTION':' SUBSCRIPTIONS'),subMoFmt:fmt(subMo),subYrLine:fmt(subYr)+' a year · '+fmt(subPaidM)+' paid so far this month',hasNextSub:!!nxs,subNextText:nxs?'Next up: '+nxs.name+' · '+dfmt(nxs.nx)+' · '+nxs.amtFmt:'',noSubsText:isAll?'Nothing yet. Add streaming, phone plans, the gym, anything that renews.':'No subscriptions paid with '+pfLabel+'.',subsHint:subsShown.length?'About '+fmt(subMo)+' a month · '+fmt(subYr)+' a year':'Weekly, monthly and yearly',openAddSub:()=>this.openSub(null),
+      sheetSub:s.sheet==='sub',subTitle:sv.editId?'Edit subscription':'Add a subscription',subCta:sv.editId?'Save changes':'Add subscription',subEditing:!!sv.editId,
+      subName:sv.name,setSubName:this.setSub('name'),subAmount:sv.amount,setSubAmount:this.setSub('amount'),subPeriods:[{value:'week',label:'Weekly'},{value:'month',label:'Monthly'},{value:'year',label:'Yearly'}],subPeriod:sv.period,setSubPeriod:this.setSub('period'),
+      subDate:sv.date,setSubDate:this.setSub('date'),subMethod:sv.method,setSubMethod:this.setSub('method'),subIsCard:sv.method==='card',subCard:cardSel(sv.cardId),setSubCard:this.setSub('cardId'),submitSub:()=>this.submitSub(),deleteSub:()=>this.deleteSub(),sheetHaul:s.sheet==='haul',expTitle:ex.editId?'Edit expense':'Add an expense',expCta:ex.editId?'Save changes':'Add expense',expEditing:!!ex.editId,
       expAmount:ex.amount,setExpAmount:this.setExp('amount'),expPlace:ex.place,setExpPlace:this.setExp('place'),expDate:ex.date,setExpDate:this.setExp('date'),
       expCats:bcs.map(c=>({name:c.name,icon:c.icon,tone:c.tone==='dusk'?'neutral':c.tone,selected:ex.cat===c.id,pick:()=>this.setExp('cat')(c.id)})),
       methodOptions:METHODS.map(m=>({value:m.value,label:m.label})),cardOptions:cards.map(c=>({value:c.id,label:c.name})),hasCards:cards.length>0,noCards:cards.length===0,goCards:()=>this.setState({sheet:null,tab:'house',houseTab:'settings'}),
