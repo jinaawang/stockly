@@ -6,16 +6,13 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with: { node-version: 20 }
-      - run: npm install
-      - run: npm run build
-        env:
-          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
-          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
-          VITE_VAPID_PUBLIC_KEY: ${{ secrets.VITE_VAPID_PUBLIC_KEY }}
+      - name: Write Supabase config
+        run: |
+          cat > app/config.js <<EOF
+          window.STOCKLY_CONFIG = { supabaseUrl: "${{ secrets.VITE_SUPABASE_URL }}", supabaseAnonKey: "${{ secrets.VITE_SUPABASE_ANON_KEY }}", vapidPublicKey: "${{ secrets.VITE_VAPID_PUBLIC_KEY }}" };
+          EOF
       - uses: actions/upload-pages-artifact@v3
-        with: { path: dist }
+        with: { path: app }
   deploy:
     needs: build
     runs-on: ubuntu-latest
